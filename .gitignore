@@ -205,3 +205,12 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Project-specific ignores
+.DS_Store
+*.log
+
+# Telegram bot
+app/__pycache__/
+app/logs/
+app/data/
