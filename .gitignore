@@ -208,6 +208,10 @@ __marimo__/
 
 # Project-specific ignores
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 *.log
 
 # Telegram bot
