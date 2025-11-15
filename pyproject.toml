@@ -1,0 +1,25 @@
+[project]
+name = "wordflow"
+version = "0.1.0"
+description = "Minimalistic Telegram bot for learning foreign words"
+authors = [
+    { name="wordflow9", email="wordflow9@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.12"
+
+dependencies = [
+    "python-dotenv",
+    "aiogram>=3.0.0",
+    "aiosqlite",
+    "pydantic-settings"
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
