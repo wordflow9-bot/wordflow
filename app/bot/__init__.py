@@ -1,4 +1,5 @@
-from main import send_message
-from .main import (
+from handlers import send_message
+from .handlers import (
     send_message
 )
+
