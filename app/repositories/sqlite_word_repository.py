@@ -1,7 +1,7 @@
 import sqlite3
 
 
-DB_LOCATION = ""
+DB_LOCATION = "database.db"
 
 
 con = sqlite3.connect(DB_LOCATION)
