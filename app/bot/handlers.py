@@ -1,8 +1,7 @@
 # @informatics_school179_bot
 
 import telebot
-TOKEN = '7875250913:AAGIkhrEcAOax3kwFDbb638JkEyOZuBHBsY'
-
+TOKEN =  '8580430243:AAF9rhHRqakIT5FayWPQyx3Bh9OR8VB0C20'
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -55,3 +54,4 @@ def menu(user_id: int):
 
 
 bot.infinity_polling()
+
