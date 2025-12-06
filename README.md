@@ -47,43 +47,43 @@ WordFlow — это простой инструмент для изучения 
 ## Архитектура проекта
 Папка app/ — основной код приложения:
 
-config.py — настройки (токен бота, путь к базе данных)
+  config.py — настройки (токен бота, путь к базе данных)
 
-interfaces/ — абстракции (интерфейсы)
+  interfaces/ — абстракции (интерфейсы)
 
-word_repository.py — интерфейс для работы со словарём
+    word_repository.py — интерфейс для работы со словарём
 
-trainer.py — интерфейс тренировочного модуля
+    trainer.py — интерфейс тренировочного модуля
 
-bot_handlers.py — интерфейс Telegram-обработчиков
+    bot_handlers.py — интерфейс Telegram-обработчиков
 
-repositories/ — слой работы с данными
+  repositories/ — слой работы с данными
 
-sqlite_word_repository.py — реализация WordRepository на SQLite
+    sqlite_word_repository.py — реализация WordRepository на SQLite
 
-database.db — файл SQLite базы проекта
+    database.db — файл SQLite базы проекта
 
-core/ — бизнес-логика приложения
+  core/ — бизнес-логика приложения
 
-trainer_impl.py — логика тренировок
+    trainer_impl.py — логика тренировок
 
-models.py — модели данных (Word, TrainingSession и др.)
+    models.py — модели данных (Word, TrainingSession и др.)
 
-bot/ — Telegram-обвязка
+  bot/ — Telegram-обвязка
 
-handlers.py — обработчики команд и состояний
+    handlers.py — обработчики команд и состояний
 
-main.py — точка входа, связывает все модули и запускает бота
+  main.py — точка входа, связывает все модули и запускает бота
 
 Папка tests/ — тесты приложения:
 
-test_placeholder.py — заглушка для будущих тестов
+  test_placeholder.py — заглушка для будущих тестов
 
 Прочие файлы:
 
 .env.example — пример переменных окружения
 
-pyproject.toml / requirements.txt — зависимости проекта
+requirements.txt — зависимости проекта
 
 README.md — документация
 
