@@ -46,39 +46,68 @@ WordFlow — это простой инструмент для изучения 
 
 ## Архитектура проекта
 wordflow/
+
 │
+
 ├── app/
+
 │   ├── config.py                     # Настройки: токен бота, путь к БД
+
 │   ├── interfaces/
+
 │   │   ├── word_repository.py        # Абстракции хранилища слов
+
 │   │   ├── trainer.py                # Интерфейс тренировочного модуля
+
 │   │   └── bot_handlers.py           # Интерфейсы Telegram-обработчиков
+
 │   │
+
 │   ├── repositories/              # слои данных
+
 │   │   ├── sqlite_word_repository.py # реализация интерфейса WordRepository для работы с SQLite
+
 │   │   └── database.db            # SQLite база проекта
+
 │   │
+
 │   ├── core/
+
 │   │   ├── trainer_impl.py           # Логика тренировок
+
 │   │   └── models.py                 # Модели: Word, TrainingSession и др.
+
 │   │
+
 │   ├── bot/
+
 │   │   └── handlers.py               # Telegram handlers
+
 │   │
+
 │   └── main.py                       # Точка входа, сборка всех модулей
+
 │
+
 ├── tests/
+
 │   └── test_placeholder.py           # Шаблон для будущих тестов
+
 │
+
 ├── .env.example
+
 ├── pyproject.toml / requirements.txt
+
 ├── README.md
+
 └── .gitignore
 
 ## Компоненты
 ### WordRepository (SQLite)
 
 Файл: sqlite_word_repository.py
+
 Реализует:
 
 1. cоздание схемы БД
@@ -94,6 +123,7 @@ wordflow/
 ### Trainer
 
 Файл: trainer_impl.py
+
 Функции:
 
 1. выбор слова
@@ -107,6 +137,7 @@ wordflow/
 ### Telegram-бот
 
 Файл: bot/handlers.py
+
 Реализует:
 
 1. команды
@@ -118,6 +149,7 @@ wordflow/
 ### Сборка проекта
 
 Файл: main.py
+
 Создаёт экземпляры:
 
 1. репозитория
