@@ -45,63 +45,49 @@ WordFlow — это простой инструмент для изучения 
 Взаимодействие построено через управляемые состояния.
 
 ## Архитектура проекта
-wordflow/
+Папка app/ — основной код приложения:
 
-│
+config.py — настройки (токен бота, путь к базе данных)
 
-├── app/
+interfaces/ — абстракции (интерфейсы)
 
-│   ├── config.py                     # Настройки: токен бота, путь к БД
+word_repository.py — интерфейс для работы со словарём
 
-│   ├── interfaces/
+trainer.py — интерфейс тренировочного модуля
 
-│   │   ├── word_repository.py        # Абстракции хранилища слов
+bot_handlers.py — интерфейс Telegram-обработчиков
 
-│   │   ├── trainer.py                # Интерфейс тренировочного модуля
+repositories/ — слой работы с данными
 
-│   │   └── bot_handlers.py           # Интерфейсы Telegram-обработчиков
+sqlite_word_repository.py — реализация WordRepository на SQLite
 
-│   │
+database.db — файл SQLite базы проекта
 
-│   ├── repositories/              # слои данных
+core/ — бизнес-логика приложения
 
-│   │   ├── sqlite_word_repository.py # реализация интерфейса WordRepository для работы с SQLite
+trainer_impl.py — логика тренировок
 
-│   │   └── database.db            # SQLite база проекта
+models.py — модели данных (Word, TrainingSession и др.)
 
-│   │
+bot/ — Telegram-обвязка
 
-│   ├── core/
+handlers.py — обработчики команд и состояний
 
-│   │   ├── trainer_impl.py           # Логика тренировок
+main.py — точка входа, связывает все модули и запускает бота
 
-│   │   └── models.py                 # Модели: Word, TrainingSession и др.
+Папка tests/ — тесты приложения:
 
-│   │
+test_placeholder.py — заглушка для будущих тестов
 
-│   ├── bot/
+Прочие файлы:
 
-│   │   └── handlers.py               # Telegram handlers
+.env.example — пример переменных окружения
 
-│   │
+pyproject.toml / requirements.txt — зависимости проекта
 
-│   └── main.py                       # Точка входа, сборка всех модулей
+README.md — документация
 
-│
-
-├── tests/
-
-│   └── test_placeholder.py           # Шаблон для будущих тестов
-
-│
-
-├── .env.example
-
-├── pyproject.toml / requirements.txt
-
-├── README.md
-
-└── .gitignore
+.gitignore — файлы и папки, игнорируемые Git
 
 ## Компоненты
 ### WordRepository (SQLite)
