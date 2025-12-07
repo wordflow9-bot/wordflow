@@ -45,49 +45,47 @@ WordFlow — это простой инструмент для изучения 
 Взаимодействие построено через управляемые состояния.
 
 ## Архитектура проекта
-Папка app/ — основной код приложения:
+  app/ — основной код приложения:
+  
+    config.py — настройки (токен бота, путь к базе данных)
+  
+    interfaces/ — абстракции (интерфейсы)
+  
+      word_repository.py — интерфейс для работы со словарём
+  
+      trainer.py — интерфейс тренировочного модуля
+  
+      bot_handlers.py — интерфейс Telegram-обработчиков
+  
+    repositories/ — слой работы с данными
+  
+      sqlite_word_repository.py — реализация WordRepository на SQLite
+  
+      database.db — файл SQLite базы проекта
+  
+    core/ — бизнес-логика приложения
+  
+      trainer_impl.py — логика тренировок
+  
+      models.py — модели данных (Word, TrainingSession и др.)
+  
+    bot/ — Telegram-обвязка
+  
+      handlers.py — обработчики команд и состояний
+  
+    main.py — точка входа, связывает все модули и запускает бота
 
-  config.py — настройки (токен бота, путь к базе данных)
+  tests/ — тесты приложения:
 
-  interfaces/ — абстракции (интерфейсы)
+    test_placeholder.py — заглушка для будущих тестов
 
-    word_repository.py — интерфейс для работы со словарём
-
-    trainer.py — интерфейс тренировочного модуля
-
-    bot_handlers.py — интерфейс Telegram-обработчиков
-
-  repositories/ — слой работы с данными
-
-    sqlite_word_repository.py — реализация WordRepository на SQLite
-
-    database.db — файл SQLite базы проекта
-
-  core/ — бизнес-логика приложения
-
-    trainer_impl.py — логика тренировок
-
-    models.py — модели данных (Word, TrainingSession и др.)
-
-  bot/ — Telegram-обвязка
-
-    handlers.py — обработчики команд и состояний
-
-  main.py — точка входа, связывает все модули и запускает бота
-
-Папка tests/ — тесты приложения:
-
-  test_placeholder.py — заглушка для будущих тестов
-
-Прочие файлы:
-
-.env.example — пример переменных окружения
-
-requirements.txt — зависимости проекта
-
-README.md — документация
-
-.gitignore — файлы и папки, игнорируемые Git
+  .env.example — пример переменных окружения
+  
+  requirements.txt — зависимости проекта
+  
+  README.md — документация
+  
+  .gitignore — файлы и папки, игнорируемые Git
 
 ## Компоненты
 ### WordRepository (SQLite)
