@@ -10,15 +10,15 @@ bot = telebot.TeleBot(settings.telegram_bot_token)
 Function = dict() # TODO объявить функции и импортировать
 
 def true(user_id):
-    send_message(user_id, "orlov gay")
+    send_message(user_id, "You're right")
 
 
 def false(user_id):
-    send_message(user_id, "orlov not gay")
+    send_message(user_id, "You're wrong")
 
 
 def prosess(user_id: int, message: str):
-    send_message(user_id, "orlov gay " + message) # TODO: заменить на функцию из файла core
+    send_message(user_id, "Your're " + message) # TODO: заменить на функцию из файла core
 
 
 @bot.message_handler(commands=['start'])
@@ -56,3 +56,4 @@ def menu(user_id: int):
 
 
 bot.infinity_polling()
+
