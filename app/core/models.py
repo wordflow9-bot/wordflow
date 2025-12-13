@@ -19,7 +19,11 @@ class UserWord:
     translation: str
     total_cnt: int = 0
     correct_cnt: int = 0
-    mastery_level: int = 0
+    # mastery_level: int = 0
+    def mastery(self) -> int:
+        if self.total_cnt != 0:
+            return self.correct_cnt // self.total_cnt * 100
+        return 0
     # created_at: datetime = None
     # updated_at: datetime = None
 
@@ -32,3 +36,4 @@ class TrainingSession:
     user_answer: str
     is_correct: bool
     # created_at: Optional[datetime] = None
+
