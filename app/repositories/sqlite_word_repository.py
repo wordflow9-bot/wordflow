@@ -56,7 +56,7 @@ def query_performed(word_id: int, correct: bool):
 =======
 
 # DB_LOCATION = "database.db"
-# тут пока написана херня
+# тут пока написана aboba
 
 
 class SQLiteWordRepository:
