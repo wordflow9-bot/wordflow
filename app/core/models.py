@@ -2,8 +2,17 @@ from dataclasses import dataclass
 from typing import Optional
 # from datetime import datetime
 
+
+@dataclass
+class User:
+    id: Optional[int]
+     telegram_id: str
+    # created_at: Optional[datetime] = None
+
+
 @dataclass
 class UserWord:
+    id: Optional[int]
     user_id: Optional[int]
     word_id: Optional[int]
     word: str
@@ -14,3 +23,12 @@ class UserWord:
     # created_at: datetime = None
     # updated_at: datetime = None
 
+
+@dataclass
+class TrainingSession:
+    id: Optional[int]
+    user_id: int
+    user_word_id: int
+    user_answer: str
+    is_correct: bool
+    # created_at: Optional[datetime] = None
