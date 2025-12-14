@@ -6,7 +6,7 @@ from typing import Optional
 @dataclass
 class User:
     id: Optional[int]
-     telegram_id: str
+    telegram_id: str
     # created_at: Optional[datetime] = None
 
 
@@ -36,4 +36,5 @@ class TrainingSession:
     user_answer: str
     is_correct: bool
     # created_at: Optional[datetime] = None
+
 
