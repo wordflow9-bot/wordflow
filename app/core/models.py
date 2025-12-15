@@ -38,3 +38,11 @@ class TrainingSession:
     # created_at: Optional[datetime] = None
 
 
+@dataclass
+class Session:
+    user_id: Optional[int]
+    session_type: str
+    crutch: Optional[Word]
+
+
+
