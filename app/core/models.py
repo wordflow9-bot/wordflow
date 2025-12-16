@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from dataclasses_json import dataclass_json
 from typing import Optional
 # from datetime import datetime
 
@@ -10,6 +11,7 @@ class User:
     # created_at: Optional[datetime] = None
 
 
+@dataclass_json
 @dataclass
 class UserWord:
     id: Optional[int]
@@ -38,11 +40,14 @@ class TrainingSession:
     # created_at: Optional[datetime] = None
 
 
+@dataclass_json
 @dataclass
 class Session:
-    user_id: Optional[int]
+    # session_id: Optional[int] нигде пока неиспользуется тк ключи user_id
+    # user_id: Optional[int] кажется также не требуется
     session_type: str
-    crutch: Optional[Word]
+    crutch: Optional[UserWord]
+
 
 
 
