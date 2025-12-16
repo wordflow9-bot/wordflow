@@ -11,7 +11,7 @@ def _normalize_text(s: str) -> str: # нормализует строку (бе�
     return s
 
 class Trainer:
-    def __init__(self, repo: SQLiteWordRepository, max_mastery: int = 5):
+    def __init__(self, repo: SQLiteWordRepository, max_mastery: int = 5): # Fix
         self.repo = repo
         self.min_mastery = min_mastery # TODO not needed?
 
@@ -23,11 +23,11 @@ class Trainer:
         candidates = [w for w in words if w.mastery_level == min_level]
         return random.choice(candidates)
 
-    def generate_question(self, mode: str = "word_to_translation") -> Optional[Tuple[int, str, str]]:
+    def generate_question(self, mode: str = "word_translation") -> Optional[Tuple[int, str, str]]:
         w = self.choose_word()
         if not w:
             return None
-        if mode == "word_to_translation":
+        if mode == "word_translation":
             return (w.id, w.word, w.translation)
         else:
             return (w.id, w.translation, w.word)
@@ -38,7 +38,7 @@ class Trainer:
             return False, 0
         correct = _normalize_text(user_answer) == _normalize_text(w.translation) # заменить при необходимости
         if correct:
-            new_level = self.repo.adjust_mastery(word_id, 1)
+            new_level = self.repo.adjust_mastery(word_id, 1) #fix
         else:
-            new_level = self.repo.adjust_mastery(word_id, -1)
+            new_level = self.repo.adjust_mastery(word_id, -1) #fix
         return correct, new_level
