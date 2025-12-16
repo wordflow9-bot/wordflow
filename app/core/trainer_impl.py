@@ -1,4 +1,4 @@
-import random
+ import random
 import re
 from typing import Tuple, Optional
 from app.repositories.sqlite_repositories import SQLiteWordRepository
@@ -15,7 +15,7 @@ class Trainer:
         self.repo = repo
         self.min_mastery = min_mastery # TODO not needed?
 
-    def choose_word(self) -> Optional[UserWord]: # TODO change word picking strategy
+    def choose_word(self) -> Optional[UserWord]: # TODO change word picking strategy random_choise?
         words = repo.get_all()
         if not words:
             return None
