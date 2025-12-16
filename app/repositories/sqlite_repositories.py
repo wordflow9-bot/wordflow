@@ -1,7 +1,8 @@
 import sqlite3
 from typing import List, Optional
 from dataclasses import dataclass
-from app.core.models import UserWord
+from dataclasses_json import dataclass_json
+from app.core.models import UserWord, Session
 
 
 class SQLiteWordRepository:
@@ -67,15 +68,39 @@ class SQLiteWordRepository:
             conn.commit()
 
 
+class SQliteSessionRepository:
+    def __init__(self, db_path: str = 'database.db'):
+        self.db_path = db_path
+        self._init_db()
+
+    def _get_conn(self):
+        return sqlite3.connect(self.db_path)  # TODO: что делает detect_types=sqlite3.PARSE_DECLTYPES)
+
+    def _init_db(self):
+        with self._get_conn() as conn:
+            conn.cursor().execute("""CREATE TABLE IF NOT EXISTS sessions(session_id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                    user_id INTEGER UNIQUE,
+                    session_json TEXT
+                    )""")
+            conn.commit()
+
+    def get_session(self, user_id) -> Optional[Session]:
+        with self._get_conn() as conn:
+            session_json = conn.cursor().execute("SELECT session_json FROM sessions WHERE user_id = ?",
+                                                 (user_id,)).fetchone()
+            return Session.from_json(*session_json) if session_json else None
+
+    def set_session(self, user_id: int, session: Session):
+        with self._get_conn() as conn:
+            conn.cursor().execute("INSERT OR REPLACE INTO sessions (user_id, session_json) VALUES(?, ?)", (user_id, session.to_json()))
+            conn.commit()
+
+
 # debug
-# sq = SQLiteWordRepository()
-# sq.clear()
-# sq.add_word(100, 'orlov', 'gay')
-# sq.add_word(100, 'orlov1', 'gay1')
-# sq.add_word(100, 'orlov2', 'gay2')
-# sq.add_word(100, 'orlov3', 'gay3')
-# print(sq.get_by_id(20))
-# sq.adjust_mastery(20, 1)
-# sq.adjust_mastery(21, 0)
-# print(*sq.get_all(), sep='\n')
-# sq.adjust_mastery(1)
+# sq = SQliteSessionRepository()
+# print(sq.get_session(100))
+# sq.set_session(100, Session('gay', UserWord(None, 100, "orlov", "aboababba")))
+# print(sq.get_session(100))
+# sq.set_session(100, Session('gay', UserWord(None, 100, "orlov", "aboa")))
+# print(sq.get_session(100))
+# # print(*sq.get_all(), sep='\n')
