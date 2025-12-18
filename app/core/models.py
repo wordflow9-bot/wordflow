@@ -46,7 +46,8 @@ class Session:
     # session_id: Optional[int] нигде пока неиспользуется тк ключи user_id
     # user_id: Optional[int] кажется также не требуется
     session_type: str
-    crutch: Optional[UserWord]
+    crutch: Optional[UserWord] = None
+
 
 
 
