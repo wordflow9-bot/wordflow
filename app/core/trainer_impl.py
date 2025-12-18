@@ -37,7 +37,7 @@ class Trainer:
         w = self.repo.get_by_id(word_id)
         if w is None:
             return False, 0
-        correct = _normalize_text(user_answer) == _normalize_text(w.translation)
+        correct = _normalize_text(user_answer) == _normalize_text(w.translation) #modify checker (not sure if works in other modes)
         if correct:
             new_level = self.repo.adjust_mastery(word_id, 1) 
         else:
