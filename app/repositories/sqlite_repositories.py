@@ -1,7 +1,5 @@
 import sqlite3
 from typing import List, Optional
-from dataclasses import dataclass
-from dataclasses_json import dataclass_json
 from app.core.models import UserWord, Session
 
 
@@ -32,9 +30,9 @@ class SQLiteWordRepository:
             id_ = cur.lastrowid
             return self.get_by_id(id_)
 
-    def get_all(self) -> List[UserWord]:
+    def get_all(self, user_id: int) -> List[UserWord]:
         with self._get_conn() as conn:
-            cur = conn.cursor().execute("SELECT * FROM words")
+            cur = conn.cursor().execute("SELECT * FROM words WHERE user_id = ?", (user_id,))
             rows = cur.fetchall()
             return [UserWord(*row) for row in rows]
 
