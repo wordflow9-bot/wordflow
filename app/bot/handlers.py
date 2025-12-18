@@ -56,4 +56,3 @@ def menu(user_id: int):
 
 
 bot.infinity_polling()
-

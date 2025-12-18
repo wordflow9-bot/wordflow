@@ -16,15 +16,15 @@ class User:
 class UserWord:
     id: Optional[int]
     user_id: Optional[int]
-    word_id: Optional[int]
+    # word_id: Optional[int]
     word: str
     translation: str
     total_cnt: int = 0
     correct_cnt: int = 0
     # mastery_level: int = 0
-    def mastery(self) -> int:
+    def mastery_level(self) -> int:
         if self.total_cnt != 0:
-            return self.correct_cnt // self.total_cnt * 100
+            return round(self.correct_cnt / self.total_cnt * 100)
         return 0
     # created_at: datetime = None
     # updated_at: datetime = None

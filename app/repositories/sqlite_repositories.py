@@ -59,16 +59,17 @@ class SQLiteWordRepository:
         with self._get_conn() as conn:
             cur = conn.cursor().execute("UPDATE words SET total_cnt = total_cnt + ?, correct_cnt = correct_cnt + ? WHERE id = ?", (delta_total_cnt, delta_correct_cnt, id_))
             conn.commit()
-            # return self.get_by_id(id_).mastery_level
-            return 1
+            lvl = self.get_by_id(id_).mastery_level()
+            return lvl
 
     def clear(self):
         with self._get_conn() as conn:
             conn.cursor().execute("""DELETE FROM words""")
+            conn.execute("DELETE FROM sqlite_sequence WHERE name='words';")
             conn.commit()
 
 
-class SQliteSessionRepository:
+class SQLiteSessionRepository:
     def __init__(self, db_path: str = 'database.db'):
         self.db_path = db_path
         self._init_db()
