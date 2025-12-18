@@ -1,35 +1,26 @@
 # @WordFlow9_bot
 
 import telebot
-from app.config import settings
+from typing import List, Optional
+from app.core.interaction import Interaction
+from app.bot.utils import send_message
 
 
-bot = telebot.TeleBot(settings.telegram_bot_token)
+bot = telebot.TeleBot('8580430243:AAF9rhHRqakIT5FayWPQyx3Bh9OR8VB0C20')
+interaction = Interaction()
 
 
-Function = dict() # TODO объявить функции и импортировать
-
-def true(user_id):
-    send_message(user_id, "You're right")
-
-
-def false(user_id):
-    send_message(user_id, "You're wrong")
-
-
-def prosess(user_id: int, message: str):
-    send_message(user_id, "Your're " + message) # TODO: заменить на функцию из файла core
-
+@bot.message_handler(commands=['help'])
+def help(message):
+    send_message(message.from_user.id, "Иди нахуй долбоеб!!!")
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    menu(message.from_user.id)
-
+    interaction.main_menu(message.from_user.id)
 
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
-    prosess(message.from_user.id, message.text)
-
+    interaction.process_message(message.from_user.id, message.text)
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_function(callback_obj):
@@ -39,20 +30,7 @@ def callback_function(callback_obj):
         text=callback_obj.message.text,
         reply_markup=None  # ← это убирает ВСЕ inline-кнопки
     )
-    Function[callback_obj.data](callback_obj.from_user.id)
-
-
-
-def send_message(user_id: int, message: str, buttons = []):
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    tmp = [telebot.types.InlineKeyboardButton(text=text, callback_data=text) for text in buttons]
-    keyboard.row(*tmp)
-    bot.send_message(user_id, message,reply_markup=keyboard)
-
-
-TABLE = ["true", "false"]
-def menu(user_id: int):
-    send_message(user_id, "2 + 2 == 4?", TABLE)
+    interaction.process_button(callback_obj.data)(callback_obj.from_user.id)
 
 
 bot.infinity_polling()
