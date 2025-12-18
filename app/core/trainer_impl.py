@@ -14,8 +14,8 @@ class Trainer:
     def __init__(self, repo: SQLiteWordRepository):
         self.repo = repo
 
-    def choose_word(self) -> Optional[UserWord]: # TODO change word picking strategy 
-        words = self.repo.get_all()
+    def choose_word(self, user_id) -> Optional[UserWord]: # TODO change word picking strategy
+        words = self.repo.get_all(user_id)
         if not words:
             return None
         min_level = min(w.mastery_level() for w in words)
@@ -24,8 +24,8 @@ class Trainer:
         # debug
         # return random.choice(words)
 
-    def generate_question(self, mode: str = "word_to_translation") -> Optional[Tuple[int, str, str]]:
-        w = self.choose_word()
+    def generate_question(self, user_id: int, mode: str = "word_to_translation") -> Optional[Tuple[int, str, str]]:
+        w = self.choose_word(user_id)
         if w is None:
             return None
         if mode == "word_to_translation":
@@ -37,7 +37,7 @@ class Trainer:
         w = self.repo.get_by_id(word_id)
         if w is None:
             return False, 0
-        correct = _normalize_text(user_answer) == _normalize_text(w.translation) #modify checker (not sure if works in other modes)
+        correct = _normalize_text(user_answer) == _normalize_text(w.translation)
         if correct:
             new_level = self.repo.adjust_mastery(word_id, 1) 
         else:
