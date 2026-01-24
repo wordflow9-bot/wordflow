@@ -4,15 +4,16 @@ import telebot
 from typing import List, Optional
 from app.core.interaction import Interaction
 from app.bot.utils import send_message
+# from app.config import settings
 
 
-bot = telebot.TeleBot('8580430243:AAF9rhHRqakIT5FayWPQyx3Bh9OR8VB0C20')
+bot = telebot.TeleBot('7875250913:AAGIkhrEcAOax3kwFDbb638JkEyOZuBHBsY')
 interaction = Interaction()
 
 
 @bot.message_handler(commands=['help'])
 def help(message):
-    send_message(message.from_user.id, "Иди нахуй долбоеб)))")
+    send_message(message.from_user.id, "Без коментариев.")
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -34,4 +35,3 @@ def callback_function(callback_obj):
 
 
 bot.infinity_polling()
-
