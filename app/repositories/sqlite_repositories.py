@@ -1,10 +1,10 @@
 import sqlite3
 from typing import List, Optional
 from app.core.models import UserWord, Session
-
+# from app.config import settings
 
 class SQLiteWordRepository:
-    def __init__(self, db_path: str = 'database.db'):
+    def __init__(self, db_path: str = '/wordflow/app/repositories/database.db'):
         self.db_path = db_path
         self._init_db()
 
@@ -30,7 +30,7 @@ class SQLiteWordRepository:
             id_ = cur.lastrowid
             return self.get_by_id(id_)
 
-    def get_all(self, user_id: int) -> List[UserWord]:
+    def get_all(self, user_id) -> List[UserWord]:
         with self._get_conn() as conn:
             cur = conn.cursor().execute("SELECT * FROM words WHERE user_id = ?", (user_id,))
             rows = cur.fetchall()
@@ -68,12 +68,12 @@ class SQLiteWordRepository:
 
 
 class SQLiteSessionRepository:
-    def __init__(self, db_path: str = 'database.db'):
+    def __init__(self, db_path: str = '/wordflow/app/repositories/database.db'):
         self.db_path = db_path
         self._init_db()
 
     def _get_conn(self):
-        return sqlite3.connect(self.db_path)  # TODO: что делает detect_types=sqlite3.PARSE_DECLTYPES)
+        return sqlite3.connect(self.db_path)
 
     def _init_db(self):
         with self._get_conn() as conn:
