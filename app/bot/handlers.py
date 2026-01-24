@@ -12,7 +12,7 @@ interaction = Interaction()
 
 @bot.message_handler(commands=['help'])
 def help(message):
-    send_message(message.from_user.id, "Иди нахуй долбоеб!!!")
+    send_message(message.from_user.id, "Иди нахуй долбоеб)))")
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -34,3 +34,4 @@ def callback_function(callback_obj):
 
 
 bot.infinity_polling()
+
