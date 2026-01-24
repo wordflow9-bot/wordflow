@@ -22,7 +22,7 @@ class UserWord:
     total_cnt: int = 0
     correct_cnt: int = 0
     # mastery_level: int = 0
-    def mastery_level(self) -> int:
+    def mastery_level(self) -> int: # TODO: переделать на нецелочисленную арифметику
         if self.total_cnt != 0:
             return round(self.correct_cnt / self.total_cnt * 100)
         return 0
@@ -47,7 +47,6 @@ class Session:
     # user_id: Optional[int] кажется также не требуется
     session_type: str
     crutch: Optional[UserWord] = None
-
 
 
 
