@@ -1,5 +1,3 @@
-# @WordFlow9_bot
-
 import telebot
 from typing import List, Optional
 from app.core.interaction import Interaction
@@ -29,9 +27,10 @@ def callback_function(callback_obj):
         chat_id=callback_obj.message.chat.id,
         message_id=callback_obj.message.message_id,
         text=callback_obj.message.text,
-        reply_markup=None  # ← это убирает ВСЕ inline-кнопки
+        reply_markup=None
     )
     interaction.process_button(callback_obj.data)(callback_obj.from_user.id)
 
 
 bot.infinity_polling()
+

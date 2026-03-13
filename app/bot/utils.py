@@ -10,3 +10,4 @@ def send_message(user_id: int, message: str, buttons: List[str] = []):
     tmp = [telebot.types.InlineKeyboardButton(text=text, callback_data=text) for text, func in buttons]
     keyboard.row(*tmp)
     bot.send_message(user_id, message,reply_markup=keyboard)
+    

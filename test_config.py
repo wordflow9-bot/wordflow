@@ -2,9 +2,6 @@
 from app.config import settings
 from google.cloud import vision
 from pathlib import Path
-import os
-
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "mindful-marking-474111-n5-9e4db07e6c18.json"
 
 client = vision.ImageAnnotatorClient()
 

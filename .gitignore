@@ -209,7 +209,7 @@ __marimo__/
 # Project-specific ignores
 .DS_Store
 .DS_Store?
-mindful-marking-474111-n5-9e4db07e6c18.json
+*.json
 ._*
 .Spotlight-V100
 .Trashes
