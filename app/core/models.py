@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 from typing import Optional
+from enum import auto, Enum
 # from datetime import datetime
 
 
@@ -40,14 +41,21 @@ class TrainingSession:
     # created_at: Optional[datetime] = None
 
 
+class SessionType(Enum):  # какому микросервису _ принадлежит_тип
+    main_menu = auto()
+    database_add_word = auto()
+    translator_translate_word = auto()
+    translator_end = auto()
+    train_check_answer = auto()
+    train_end = auto()
+
+
 @dataclass_json
 @dataclass
 class Session:
     # session_id: Optional[int] нигде пока неиспользуется тк ключи user_id
     # user_id: Optional[int] кажется также не требуется
-    session_type: str
+    session_type: SessionType
     crutch: Optional[UserWord] = None
-
-
 
 
