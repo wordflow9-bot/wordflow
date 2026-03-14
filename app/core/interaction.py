@@ -1,4 +1,4 @@
-from app.core.models import Session
+from app.core.models import Session, SessionType
 from app.repositories.sqlite_repositories import *
 from app.bot.utils import send_message
 from app.core.trainer_impl import Trainer
@@ -12,7 +12,7 @@ class Interaction:
         self.translator = GoogleTranslator(source='ru', target='en') # TODO: двустороний перевод
 
     def main_menu(self, user_id: int):
-        self.session_repo.set_session(user_id, Session("Main menu"))
+        self.session_repo.set_session(user_id, Session(SessionType.main_menu))
         buttons = [["Добавить слово", "Добавить слово"], ["Начать тренировку", "Начать тренировку"], ["Быстрый перевод", "Быстрый перевод"]]
         send_message(user_id, f"Что Вы хотите делать?", buttons)
 
@@ -21,6 +21,7 @@ class Interaction:
         if len(words) != 2:
             # TODO : перевод от google
             send_message(user_id, "Введите ровно 2 слова")
+            self.main_menu(user_id)
             return
         word, translation = words[0], words[1]
         self.user_word_repo.add_word(user_id, word, translation)
@@ -44,11 +45,11 @@ class Interaction:
         if session is None:
             send_message(user_id, "Привет")
             self.main_menu(user_id)
-        elif session.session_type == "Waiting for answer": # TODO: тип сессии
+        elif session.session_type == SessionType.train_check_answer:  # TODO: тип сессии
             self.check_translation(user_id, message)
-        elif session.session_type == "Waiting for word-translation":
+        elif session.session_type == SessionType.database_add_word:
             self.add_word(user_id, message)
-        elif session.session_type == "Waiting for word":
+        elif session.session_type == SessionType.translator_translate_word:
             self.process_translate(user_id, message)
         else:
             send_message(user_id, "Сначало выберите режим")
@@ -61,17 +62,18 @@ class Interaction:
             send_message(user_id, "Сначала добавьте слова")
             return
         send_message(user_id, f"Переведите слово {user_word.word}")
-        self.session_repo.set_session(user_id, Session("Waiting for answer", user_word))
+        self.session_repo.set_session(user_id,
+            Session(SessionType.train_check_answer, user_word))
 
     def button_add_word(self, user_id: int):
-        self.session_repo.set_session(user_id, Session("Waiting for word-translation"))
+        self.session_repo.set_session(user_id, Session(SessionType.database_add_word))
         send_message(user_id, f"Введите слово и перевод через пробел")
 
     def button_translate(self, user_id: int):
-        self.session_repo.set_session(user_id, Session("Waiting for word"))
+        self.session_repo.set_session(user_id, Session(SessionType.translator_translate_word))
         send_message(user_id, f"Введите слово на русском")
 
-    def process_button(self, button: str):
+    def process_button(self, button: int):
         _dict = {"Добавить слово": self.button_add_word,
                  "Начать тренировку": self.button_ask_question,
                  "Главное меню": self.main_menu,
