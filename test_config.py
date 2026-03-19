@@ -2,11 +2,6 @@
 from app.config import settings
 from google.cloud import vision
 from pathlib import Path
-import os
-
-
-if settings.google_application_credentials:
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = settings.google_application_credentials
 
 client = vision.ImageAnnotatorClient()
 

@@ -6,83 +6,49 @@ CYRILLIC_PATTERN = re.compile(r"[а-яА-ЯёЁ]")
 LATIN_PATTERN = re.compile(r"[a-zA-Z]")
 
 
-def detect_language(text: str) -> str:
-    if CYRILLIC_PATTERN.search(text):
-        return "ru"
-    if LATIN_PATTERN.search(text):
-        return "en"
-    return "unknown"
+def detect_language(word: str) -> str:
+        if CYRILLIC_PATTERN.search(word):
+            return "ru"
+        if LATIN_PATTERN.search(word):
+            return "en"
+        return "unknown"
 
 
-def clean(text: str) -> str:
-    return re.sub(r"[^а-яА-ЯёËa-zA-Z\s]", "", text).strip()
+def clean_en(word: str) -> str:
+    return re.sub(r"[^a-zA-Z\-]", "", word).strip()
 
+def clean_ru(word: str) -> str:
+    return re.sub(r"[^а-яА-ЯёЁ\s\-]", "", word).strip()
 
-def clean_en(text: str) -> str:
-    return re.sub(r"[^a-zA-Z\s]", "", text).strip() #обработка смешанных строк добавить
-
-
-def clean_ru(text: str) -> str:
-    return re.sub(r"[^а-яА-ЯёЁ\s]", "", text).strip() #обработка смешанных строк добавить
-
-
-def extract_elements(text: str):
-    text = clean(text)
-    elements = []
-    for line in text.split("\n"):
-        line = line.strip()
-        if not line:
-            continue
-        parts = line.split(" ")
-        for part in parts:
-            part = part.strip()
-            if part:
-                elements.append(part)
-    return elements
-
-
-def split_mixed_elements(elements: list):
-    if len(elements) < 2:
-        return elements
-    groups = []
-    current_lang = detect_language(elements[0])
-    current_group = [elements[0]]
-    for word in elements[1:]:
-        lang = detect_language(word)
-        if lang == current_lang:
-            current_group.append(word)
-        else:
-            groups.append(" ".join(current_group))
-            current_group = [word]
-            current_lang = lang
-    groups.append(" ".join(current_group))
-    return groups
-
-
+    
 def parse_vocabulary(text: str) -> list[dict]:
-    normalized = normalize_text(text)
-    elements = extract_elements(normalized)
-    elements = split_mixed_elements(elements)
+    normalized_output = normalize_text(text)
     pairs = []
-    i = 0
-    while i < len(elements) - 1:
-        first = elements[i]
-        second = elements[i + 1]
-        lang1 = detect_language(first)
-        lang2 = detect_language(second)
-        if lang1 == "en" and lang2 == "ru":
-            en = clean_en(first)
-            ru = clean_ru(second)
-            if en and ru:
-                pairs.append({"en": en, "ru": ru})
-            i += 2
+    for line in normalized_output.split("\n"):
+        if "-" not in line:
             continue
-        if lang1 == "ru" and lang2 == "en":
-            en = clean_en(second)
-            ru = clean_ru(first)
-            if en and ru:
-                pairs.append({"en": en, "ru": ru})
-            i += 2
+        parts = line.split("-", 1)
+        if len(parts) != 2:
             continue
-        i += 1
+        left = parts[0].strip()
+        right = parts[1].strip()
+        lang_left = detect_language(left)
+        lang_right = detect_language(right)
+        en_word = None
+        ru_word = None
+        if lang_left == "en" and lang_right == "ru":
+            left = clean_en(left)
+            en_word = left
+            right = clean_ru(right)
+            ru_word = right
+        elif lang_left == "ru" and lang_right == "en":
+            right = clean_en(right)
+            en_word = right
+            left = clean_ru(left)
+            ru_word = left
+        if en_word and ru_word:
+            pairs.append({
+                "en": en_word,
+                "ru": ru_word
+            })
     return pairs

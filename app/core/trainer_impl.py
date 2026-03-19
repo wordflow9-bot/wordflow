@@ -3,11 +3,14 @@ import re
 from typing import Tuple, Optional
 from app.repositories.sqlite_repositories import SQLiteWordRepository
 from app.core.models import UserWord
+
+
 def _normalize_text(s: str) -> str: # нормализует строку (без знаков препинания и с одиночными пробелами)
     s = s.lower().strip()
     s = re.sub(r'[\W_]+', ' ', s)
     s = re.sub(r'\s+', ' ', s)
     return s
+
 
 class Trainer:
     def __init__(self, repo: SQLiteWordRepository):
@@ -18,10 +21,8 @@ class Trainer:
         if not words:
             return None
         return random.choices(words, weights=[(101 - word.mastery_level()) ** 0.1 for word in words])[0]
-        # debug
-        # return random.choice(words)
 
-    def generate_question(self, user_id: int, mode: str = "word_to_translation") -> Optional[Tuple[int, str, str]]:
+    def generate_question(self, user_id: int, mode: str = "word_to_translation") -> Optional[Tuple[int, str, str]]: # TODO: переделать, НЕРАБОТАЕТ
         w = self.choose_word(user_id)
         if w is None:
             return None
@@ -31,10 +32,10 @@ class Trainer:
             return (w.id, w.translation, w.word)
 
     def check_answer(self, word_id: int, user_answer: str) -> Tuple[bool, int]:
-        w = self.repo.get_by_id(word_id)
-        if w is None:
+        word = self.repo.get_by_id(word_id).word
+        if word is None:
             return False, 0
-        correct = _normalize_text(user_answer) == _normalize_text(w.translation)
+        correct = _normalize_text(user_answer) == _normalize_text(word.en)
         if correct:
             new_level = self.repo.adjust_mastery(word_id, 1) 
         else:

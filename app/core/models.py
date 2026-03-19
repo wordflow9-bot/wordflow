@@ -5,6 +5,19 @@ from enum import auto, Enum
 # from datetime import datetime
 
 
+@dataclass_json
+@dataclass
+class Word:
+    ru: str
+    en: str
+
+
+@dataclass
+class Button:
+    message_id: int
+    metadata: Optional[Word] = None
+
+
 @dataclass
 class User:
     id: Optional[int]
@@ -18,12 +31,12 @@ class UserWord:
     id: Optional[int]
     user_id: Optional[int]
     # word_id: Optional[int]
-    word: str
-    translation: str
+    word: Word
     total_cnt: int = 0
     correct_cnt: int = 0
     # mastery_level: int = 0
-    def mastery_level(self) -> int: # TODO: переделать на нецелочисленную арифметику
+
+    def mastery_level(self) -> int:  # TODO: переделать на нецелочисленную арифметику
         if self.total_cnt != 0:
             return round(self.correct_cnt / self.total_cnt * 100)
         return 0
@@ -44,8 +57,8 @@ class TrainingSession:
 class SessionType(Enum):  # какому микросервису _ принадлежит_тип
     main_menu = auto()
     database_add_word = auto()
-    translator_translate_word = auto()
-    translator_end = auto()
+    translator = auto()
+    # translator_end = auto()
     train_check_answer = auto()
     train_end = auto()
 
@@ -53,8 +66,6 @@ class SessionType(Enum):  # какому микросервису _ принад
 @dataclass_json
 @dataclass
 class Session:
-    # session_id: Optional[int] нигде пока неиспользуется тк ключи user_id
-    # user_id: Optional[int] кажется также не требуется
     session_type: SessionType
     crutch: Optional[UserWord] = None
 
