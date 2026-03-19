@@ -14,21 +14,26 @@ def detect_language(text: str) -> str:
     return "unknown"
 
 
+def clean(text: str) -> str:
+    return re.sub(r"[^а-яА-ЯёËa-zA-Z\s]", "", text).strip()
+
+
 def clean_en(text: str) -> str:
-    return re.sub(r"[^a-zA-Z\-\s]", "", text).strip()
+    return re.sub(r"[^a-zA-Z\s]", "", text).strip() #обработка смешанных строк добавить
 
 
 def clean_ru(text: str) -> str:
-    return re.sub(r"[^а-яА-ЯёЁ\s\-]", "", text).strip()
+    return re.sub(r"[^а-яА-ЯёЁ\s]", "", text).strip() #обработка смешанных строк добавить
 
 
 def extract_elements(text: str):
+    text = clean(text)
     elements = []
     for line in text.split("\n"):
         line = line.strip()
         if not line:
             continue
-        parts = re.split(r"-+", line)
+        parts = line.split(" ")
         for part in parts:
             part = part.strip()
             if part:

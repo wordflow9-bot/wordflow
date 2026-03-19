@@ -1,6 +1,7 @@
 from app.config import settings
 from app.bot import *
-from dotenv import load_dotenv
+import os
 
-load_dotenv()
-# TODO перенести сюда точку входа и запуска программы!
+
+if settings.google_application_credentials:
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = settings.google_application_credentials

@@ -52,7 +52,7 @@ class Interaction:
         elif session.session_type == SessionType.translator_translate_word:
             self.process_translate(user_id, message)
         else:
-            send_message(user_id, "Сначало выберите режим")
+            send_message(user_id, "Сначала выберите режим")
             self.main_menu(user_id)
 
 
