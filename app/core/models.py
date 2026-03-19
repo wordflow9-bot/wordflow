@@ -57,8 +57,8 @@ class TrainingSession:
 class SessionType(Enum):  # какому микросервису _ принадлежит_тип
     main_menu = auto()
     database_add_word = auto()
+    database_add_word_choose_translation = auto()
     translator = auto()
-    # translator_end = auto()
     train_check_answer = auto()
     train_end = auto()
 

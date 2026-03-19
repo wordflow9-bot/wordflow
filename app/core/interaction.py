@@ -14,6 +14,15 @@ class Interaction:
         self.translator = Translator()
         self.gateway = TelegramGateway(bot_token)
 
+
+    def _init_word(self, word: str):
+        lang = self.translator.language(word)
+        if lang == 'ru':
+            return Word(ru=word, en=self.translator.translate(word))
+        if lang == 'en':
+            return Word(en=word, ru=self.translator.translate(word))
+        return Word(ru=word, en=word)
+
     def send_message(self, user_id: int, message: str, buttons: Optional[List[List[str]]] = None,
                      metadata: Optional[Word] = None):
         if buttons is None:
@@ -34,12 +43,27 @@ class Interaction:
     def main_menu(self, user_id: int, message_id: int = 0):
         self.session_repo.set_session(user_id, Session(SessionType.main_menu))
         self.delete_buttons(user_id)
-        buttons = [["Тренировка", "Тренировка"],
+        buttons = [["Добавить слово", "Добавить слово"],
+                   ["Тренировка", "Тренировка"],
                    ["Переводчик", "Переводчик"]]
         self.send_message(user_id, f"Что Вы хотите делать?", buttons)
 
     def add_word(self, user_id: int, message: str):
-        self.user_word_repo.add_word(user_id, message, message)
+        self.session_repo.set_session(user_id,
+                                      Session(SessionType.database_add_word_choose_translation
+                                              , UserWord(None, user_id, self._init_word(message))))
+        self.send_message(user_id, f'Выберите перевод или напишите свой',
+                          buttons=[[self.translator.translate(message), "Выбрать перевод"]])
+
+    def add_word_translation(self, user_id: int, message: str):
+        user_word = self.session_repo.get_session(user_id).crutch
+        lang = self.translator.language(message)
+        if lang == 'ru':
+            user_word.word.ru = message
+        elif lang == 'en':
+            user_word.word.en = message
+        self.user_word_repo.add_word(user_id, user_word.word)
+        self.main_menu(user_id)
 
     def list_words(self, user_id: int):
         user_words = self.user_word_repo.get_all(user_id)
@@ -79,10 +103,12 @@ class Interaction:
             self.check_translation(user_id, message)
         elif session.session_type == SessionType.database_add_word:
             self.add_word(user_id, message)
+        elif session.session_type == SessionType.database_add_word_choose_translation:
+            self.add_word_translation(user_id, message)
         elif session.session_type == SessionType.translator:
             self.process_translate(user_id, message)
         else:
-            self.send_message(user_id, "Сначало выберите режим")
+            self.send_message(user_id, "Сначала выберите режим")
             self.main_menu(user_id)
 
     def button_start_training(self, user_id: int, message_id: int):
@@ -107,12 +133,21 @@ class Interaction:
             self.delete_button(user_id, message_id)
 
     def button_add_word(self, user_id: int, message_id: int):
-        return self.send_message(user_id, str(message_id))
+        self.delete_button(user_id, message_id)
+        self.session_repo.set_session(user_id, Session(SessionType.database_add_word))
+        self.send_message(user_id, f"Введите слово")
+
+    def button_add_word_translation(self, user_id: int, message_id: int):
+        self.delete_button(user_id, message_id)
+        word = self.session_repo.get_session(user_id).cructh.word
+        self.user_word_repo.add_word(user_id, word)
+        self.main_menu(user_id)
 
     def process_button(self, button: str):
         _dict = {"Тренировка": self.button_start_training,
                  "Меню": self.main_menu,
                  "Добавить слово": self.button_add_word,
+                 "Выбрать перевод": self.button_add_word_translation,
                  "Переводчик": self.button_translator,
                  "Переводчик, добавить слово": self.button_translator_add_word
                  }
