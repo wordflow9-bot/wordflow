@@ -3,7 +3,7 @@ from typing import List, Optional
 from app.core.interaction import Interaction
 # from app.config import settings
 
-TOKEN = '7875250913:AAGIkhrEcAOax3kwFDbb638JkEyOZuBHBsY'
+TOKEN = "YOUR TOKEN"
 bot = telebot.TeleBot(TOKEN)
 interaction = Interaction(TOKEN)
 
