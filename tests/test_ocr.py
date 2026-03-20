@@ -1,8 +1,10 @@
 import sys
 from pathlib import Path
+from app.config import settings
 from app.services.ocr.ocr_service import extract_text
 from app.services.parser.vocabulary_parser import parse_vocabulary
 import cv2
+
 
 IMAGE_PATH = Path("tests/test.jpg")
 

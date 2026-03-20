@@ -17,6 +17,9 @@ def normalize_text(text: str) -> str:
     text = re.sub(r"\s*-\s*", " - ", text)
     text = re.sub(r"[|•·]", "", text)
     text = re.sub(r"[ \t]+", " ", text)
+    text = text.replace('0', 'О')
+    text = text.replace('1', 'І')
+    # text = re.sub(r'([а-яА-ЯёЁ])\1{2,}', r'\1', text)
     lines = []
     for line in text.splitlines():
         line = line.strip()
