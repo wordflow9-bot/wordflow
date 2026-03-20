@@ -2,9 +2,6 @@ import telebot
 from typing import List, Optional
 
 
-
-
-
 class TelegramGateway:
     def __init__(self, token: str):
         self._bot = telebot.TeleBot(token)
