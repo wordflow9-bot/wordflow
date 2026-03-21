@@ -3,7 +3,7 @@ from app.repositories.sqlite_repositories import *
 from app.bot.utils import TelegramGateway
 from app.core.trainer_impl import Trainer
 from app.core.translator import Translator
-
+from app.services.ocr_func import img_to_word_list
 
 class Interaction:
     def __init__(self, bot_token: str):
@@ -13,7 +13,6 @@ class Interaction:
         self.trainer = Trainer(self.user_word_repo)
         self.translator = Translator()
         self.gateway = TelegramGateway(bot_token)
-
 
     def _init_word(self, word: str):
         lang = self.translator.language(word)
@@ -139,9 +138,23 @@ class Interaction:
 
     def button_add_word_translation(self, user_id: int, message_id: int):
         self.delete_button(user_id, message_id)
-        word = self.session_repo.get_session(user_id).cructh.word
+        word = self.session_repo.get_session(user_id).crutch.word
         self.user_word_repo.add_word(user_id, word)
         self.main_menu(user_id)
+
+    def process_photo(self, user_id: int, photo_bytes: bytes):
+        try:
+            words = img_to_word_list(photo_bytes)
+            if not words:
+                self.send_message(user_id, "❌ Не удалось распознать текст")
+                return
+            for word in Word:
+                self.send_message(user_id, f"{word.ru} – {word.en}",
+                                  buttons=[["Добавить", "Переводчик, добавить слово"]], metadata=Word)
+        except Exception as e:
+            self.send_message(user_id, "❌ Не удалось распознать текст")
+            print(f"Ошибка при распознании фото: {e}")
+            self.main_menu(user_id)
 
     def process_button(self, button: str):
         _dict = {"Тренировка": self.button_start_training,

@@ -5,7 +5,7 @@ ROOT_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 from typing import Optional
 import telebot
-from app.config import settings
+from config import settings
 from app.repositories.sqlite_repositories import SQLiteWordRepository
 from app.core.models import UserWord
 from app.core.trainer_impl import Trainer

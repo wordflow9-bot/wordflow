@@ -1,6 +1,6 @@
 from google.cloud import vision
 from .image_preprocessing import preprocess_image
-from app.config import settings
+from config import settings
 import os
 
 

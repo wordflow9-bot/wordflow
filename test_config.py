@@ -1,5 +1,5 @@
 # test_config.py
-from app.config import settings
+from config import settings
 from google.cloud import vision
 from pathlib import Path
 

@@ -1,0 +1,222 @@
+Index: app/services/ocr_func.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import sys\r\nfrom pathlib import Path\r\nfrom app.config import settings\r\nfrom app.services.ocr.ocr_service import extract_text\r\nfrom app.services.parser.vocabulary_parser import parse_vocabulary\r\nimport cv2\r\n\r\n\r\n\r\ndef img_to_word_list(image_bytes = bytes):\r\n    ocr_result = extract_text(image_bytes)\r\n    pairs = parse_vocabulary(ocr_result[\"text\"])\r\n    return pairs
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/services/ocr_func.py b/app/services/ocr_func.py
+--- a/app/services/ocr_func.py	(revision 06d68ac415de31006667374c449dd2adf1f3223c)
++++ b/app/services/ocr_func.py	(date 1774086815208)
+@@ -1,13 +1,16 @@
+ import sys
+ from pathlib import Path
+-from app.config import settings
++from config import settings
+ from app.services.ocr.ocr_service import extract_text
+ from app.services.parser.vocabulary_parser import parse_vocabulary
+ import cv2
++from typing import List
++from app.core.models import Word
+ 
+ 
+-
+-def img_to_word_list(image_bytes = bytes):
++def img_to_word_list(image_bytes: bytes) -> List[Word]:
+     ocr_result = extract_text(image_bytes)
+     pairs = parse_vocabulary(ocr_result["text"])
+-    return pairs
+\ No newline at end of file
++    tmp = [Word(en=dict_['en'], ru=dict_['ru']) for dict_ in pairs]
++    return tmp
++
+Index: app/core/interaction.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from app.core.models import Session, SessionType\r\nfrom app.repositories.sqlite_repositories import *\r\nfrom app.bot.utils import TelegramGateway\r\nfrom app.core.trainer_impl import Trainer\r\nfrom app.core.translator import Translator\r\n\r\n\r\nclass Interaction:\r\n    def __init__(self, bot_token: str):\r\n        self.user_word_repo = SQLiteWordRepository()\r\n        self.session_repo = SQLiteSessionRepository()\r\n        self.button_repo = SQLiteButtonRepository()\r\n        self.trainer = Trainer(self.user_word_repo)\r\n        self.translator = Translator()\r\n        self.gateway = TelegramGateway(bot_token)\r\n\r\n\r\n    def _init_word(self, word: str):\r\n        lang = self.translator.language(word)\r\n        if lang == 'ru':\r\n            return Word(ru=word, en=self.translator.translate(word))\r\n        if lang == 'en':\r\n            return Word(en=word, ru=self.translator.translate(word))\r\n        return Word(ru=word, en=word)\r\n\r\n    def send_message(self, user_id: int, message: str, buttons: Optional[List[List[str]]] = None,\r\n                     metadata: Optional[Word] = None):\r\n        if buttons is None:\r\n            self.gateway.send_message(user_id, message)\r\n        else:\r\n            message_id = self.gateway.send_message(user_id, message, buttons)\r\n            if message_id is not None:\r\n                self.button_repo.add_button(user_id, Button(message_id=message_id, metadata=metadata))\r\n\r\n    def delete_button(self, user_id: int, message_id: int):\r\n        self.gateway.delete_button(user_id, message_id)\r\n        self.button_repo.delete_button(user_id, message_id)\r\n\r\n    def delete_buttons(self, user_id: int):\r\n        for button in self.button_repo.get_list_buttons(user_id):\r\n            self.delete_button(user_id, button.message_id)\r\n\r\n    def main_menu(self, user_id: int, message_id: int = 0):\r\n        self.session_repo.set_session(user_id, Session(SessionType.main_menu))\r\n        self.delete_buttons(user_id)\r\n        buttons = [[\"Добавить слово\", \"Добавить слово\"],\r\n                   [\"Тренировка\", \"Тренировка\"],\r\n                   [\"Переводчик\", \"Переводчик\"]]\r\n        self.send_message(user_id, f\"Что Вы хотите делать?\", buttons)\r\n\r\n    def add_word(self, user_id: int, message: str):\r\n        self.session_repo.set_session(user_id,\r\n                                      Session(SessionType.database_add_word_choose_translation\r\n                                              , UserWord(None, user_id, self._init_word(message))))\r\n        self.send_message(user_id, f'Выберите перевод или напишите свой',\r\n                          buttons=[[self.translator.translate(message), \"Выбрать перевод\"]])\r\n\r\n    def add_word_translation(self, user_id: int, message: str):\r\n        user_word = self.session_repo.get_session(user_id).crutch\r\n        lang = self.translator.language(message)\r\n        if lang == 'ru':\r\n            user_word.word.ru = message\r\n        elif lang == 'en':\r\n            user_word.word.en = message\r\n        self.user_word_repo.add_word(user_id, user_word.word)\r\n        self.main_menu(user_id)\r\n\r\n    def list_words(self, user_id: int):\r\n        user_words = self.user_word_repo.get_all(user_id)\r\n        message = \"Ваш список слов:\\n\"\r\n        for user_word in user_words:\r\n            message += f\"{user_word.word.ru} {user_word.word.en} {user_word.mastery_level()}\\n\"\r\n        self.send_message(user_id, message)\r\n\r\n    def check_translation(self, user_id: int, message: str):\r\n        answer, level = self.trainer.check_answer(self.session_repo.get_session(user_id).crutch.id, message)\r\n        if answer:\r\n            answer = \"верен\"\r\n        else:\r\n            answer = \"неверен\"\r\n        buttons = [[\"Eще раз\", \"Тренировка\"],\r\n                   [\"Меню\", \"Меню\"]]\r\n        self.send_message(user_id, f'Ваш ответ {answer}. Ваш успех в изучении слова {level}%', buttons)\r\n\r\n    def process_translate(self, user_id: int, message: str):\r\n        lang = self.translator.language(message)\r\n        translation = self.translator.translate(message)\r\n        if lang == 'ru':\r\n            buttons = [[\"Добавить слово\", \"Переводчик, добавить слово\"]]\r\n            self.send_message(user_id, translation, buttons, metadata=Word(ru=message, en=translation))\r\n        elif lang == 'en':\r\n            buttons = [[\"Добавить слово\", \"Переводчик, добавить слово\"]]\r\n            self.send_message(user_id, translation, buttons, metadata=Word(en=message, ru=translation))\r\n        elif lang == 'un':\r\n            self.send_message(user_id, translation)\r\n\r\n    def process_message(self, user_id: int, message: str):\r\n        session = self.session_repo.get_session(user_id)\r\n        if session is None:\r\n            self.send_message(user_id, \"Привет\")\r\n            self.main_menu(user_id)\r\n        elif session.session_type == SessionType.train_check_answer:  # TODO: тип сессии\r\n            self.check_translation(user_id, message)\r\n        elif session.session_type == SessionType.database_add_word:\r\n            self.add_word(user_id, message)\r\n        elif session.session_type == SessionType.database_add_word_choose_translation:\r\n            self.add_word_translation(user_id, message)\r\n        elif session.session_type == SessionType.translator:\r\n            self.process_translate(user_id, message)\r\n        else:\r\n            self.send_message(user_id, \"Сначала выберите режим\")\r\n            self.main_menu(user_id)\r\n\r\n    def button_start_training(self, user_id: int, message_id: int):\r\n        self.delete_buttons(user_id)\r\n        user_word = self.trainer.choose_word(user_id)\r\n        if user_word is None:\r\n            self.send_message(user_id, \"Сначала добавьте слова\")\r\n            self.main_menu()\r\n        else:\r\n            self.send_message(user_id, f\"Переведите слово {user_word.word.ru}\")\r\n            self.session_repo.set_session(user_id, Session(SessionType.train_check_answer, user_word))\r\n\r\n    def button_translator(self, user_id: int, message_id: int):\r\n        self.delete_buttons(user_id)\r\n        self.session_repo.set_session(user_id, Session(SessionType.translator))\r\n        self.send_message(user_id, f\"Введите слово\")\r\n\r\n    def button_translator_add_word(self, user_id: int, message_id: int):\r\n        word = self.button_repo.get_button_metadata(user_id, message_id)\r\n        if word is not None:\r\n            self.user_word_repo.add_word(user_id, word)\r\n            self.delete_button(user_id, message_id)\r\n\r\n    def button_add_word(self, user_id: int, message_id: int):\r\n        self.delete_button(user_id, message_id)\r\n        self.session_repo.set_session(user_id, Session(SessionType.database_add_word))\r\n        self.send_message(user_id, f\"Введите слово\")\r\n\r\n    def button_add_word_translation(self, user_id: int, message_id: int):\r\n        self.delete_button(user_id, message_id)\r\n        word = self.session_repo.get_session(user_id).cructh.word\r\n        self.user_word_repo.add_word(user_id, word)\r\n        self.main_menu(user_id)\r\n\r\n    def process_button(self, button: str):\r\n        _dict = {\"Тренировка\": self.button_start_training,\r\n                 \"Меню\": self.main_menu,\r\n                 \"Добавить слово\": self.button_add_word,\r\n                 \"Выбрать перевод\": self.button_add_word_translation,\r\n                 \"Переводчик\": self.button_translator,\r\n                 \"Переводчик, добавить слово\": self.button_translator_add_word\r\n                 }\r\n        return _dict[button]\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/core/interaction.py b/app/core/interaction.py
+--- a/app/core/interaction.py	(revision 06d68ac415de31006667374c449dd2adf1f3223c)
++++ b/app/core/interaction.py	(date 1774087186327)
+@@ -3,7 +3,7 @@
+ from app.bot.utils import TelegramGateway
+ from app.core.trainer_impl import Trainer
+ from app.core.translator import Translator
+-
++from app.services.ocr_func import img_to_word_list
+ 
+ class Interaction:
+     def __init__(self, bot_token: str):
+@@ -14,7 +14,6 @@
+         self.translator = Translator()
+         self.gateway = TelegramGateway(bot_token)
+ 
+-
+     def _init_word(self, word: str):
+         lang = self.translator.language(word)
+         if lang == 'ru':
+@@ -139,9 +138,23 @@
+ 
+     def button_add_word_translation(self, user_id: int, message_id: int):
+         self.delete_button(user_id, message_id)
+-        word = self.session_repo.get_session(user_id).cructh.word
++        word = self.session_repo.get_session(user_id).crutch.word
+         self.user_word_repo.add_word(user_id, word)
+         self.main_menu(user_id)
++
++    def process_photo(self, user_id: int, photo_bytes: bytes):
++        try:
++            words = img_to_word_list(photo_bytes)
++            if not words:
++                self.send_message(user_id, "❌ Не удалось распознать текст")
++                return
++            for word in Word:
++                self.send_message(user_id, f"{word.ru} – {word.en}",
++                                  buttons=[["Добавить", "Переводчик, добавить слово"]], metadata=Word)
++        except Exception as e:
++            self.send_message(user_id, "❌ Не удалось распознать текст")
++            print(f"Ошибка при распознании фото: {e}")
++            self.main_menu(user_id)
+ 
+     def process_button(self, button: str):
+         _dict = {"Тренировка": self.button_start_training,
+Index: app/config.py
+===================================================================
+diff --git a/app/config.py b/app/config.py
+deleted file mode 100644
+--- a/app/config.py	(revision 06d68ac415de31006667374c449dd2adf1f3223c)
++++ /dev/null	(revision 06d68ac415de31006667374c449dd2adf1f3223c)
+@@ -1,13 +0,0 @@
+-from pydantic_settings import BaseSettings, SettingsConfigDict
+-
+-class Settings(BaseSettings):
+-    telegram_bot_token: str
+-    database_url: str = "sqlite:///./data/words.db"
+-
+-    model_config = SettingsConfigDict(
+-        env_file=".env",
+-        env_file_encoding="utf-8",
+-        extra="ignore"
+-    )
+-        
+-settings = Settings()
+\ No newline at end of file
+Index: app/bot/handlers.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import telebot\r\nfrom typing import List, Optional\r\nfrom app.core.interaction import Interaction\r\n# from app.config import settings\r\n\r\nTOKEN = \"YOUR TOKEN\"\r\nbot = telebot.TeleBot(TOKEN)\r\ninteraction = Interaction(TOKEN)\r\n\r\n\r\n# @bot.message_handler(commands=['help']) TODO: написать help() в interaction\r\n# def _help(message):\r\n#     interaction.help(message.from_user.id)\r\n\r\n\r\n@bot.message_handler(commands=['list'])\r\ndef _help(message):\r\n    interaction.list_words(message.from_user.id)\r\n\r\n\r\n@bot.message_handler(commands=['start'])\r\ndef start(message):\r\n    interaction.main_menu(message.from_user.id)\r\n\r\n\r\n@bot.message_handler(commands=['menu'])\r\ndef start(message):\r\n    interaction.main_menu(message.from_user.id)\r\n\r\n\r\n@bot.message_handler(content_types=['text'])\r\ndef get_text_messages(message):\r\n    interaction.process_message(message.from_user.id, message.text)\r\n\r\n\r\n@bot.callback_query_handler(func=lambda call: True)\r\ndef callback_function(callback_obj):\r\n    interaction.process_button(callback_obj.data)(callback_obj.from_user.id, callback_obj.message.message_id)\r\n\r\n\r\nbot.infinity_polling()\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/bot/handlers.py b/app/bot/handlers.py
+--- a/app/bot/handlers.py	(revision 06d68ac415de31006667374c449dd2adf1f3223c)
++++ b/app/bot/handlers.py	(date 1774086417696)
+@@ -1,9 +1,11 @@
+ import telebot
+ from typing import List, Optional
+ from app.core.interaction import Interaction
+-# from app.config import settings
++from config import settings
++from io import BytesIO
+ 
+-TOKEN = "YOUR TOKEN"
++
++TOKEN = settings.telegram_bot_token
+ bot = telebot.TeleBot(TOKEN)
+ interaction = Interaction(TOKEN)
+ 
+@@ -38,5 +40,20 @@
+     interaction.process_button(callback_obj.data)(callback_obj.from_user.id, callback_obj.message.message_id)
+ 
+ 
++@bot.message_handler(content_types=['photo'])
++def handle_photo(message):
++    user_id = message.from_user.id
++    try:
++        file_id = message.photo[-1].file_id
++        file_info = bot.get_file(file_id)
++        # Скачиваем в байты
++        downloaded_file = bot.download_file(file_info.file_path)
++        # Оборачиваем в поток (файлоподобный объект)
++        photo_stream = BytesIO(downloaded_file)
++        interaction.process_photo(user_id, photo_stream)
++    except Exception as e:
++        print(f"Ошибка при приеме фото : {e}")
++
++
+ bot.infinity_polling()
+ 
+Index: test_config.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># test_config.py\r\nfrom app.config import settings\r\nfrom google.cloud import vision\r\nfrom pathlib import Path\r\n\r\nclient = vision.ImageAnnotatorClient()\r\n\r\nwith open(\"tests/test.jpg\", \"rb\") as f:\r\n    content = f.read()\r\n\r\nimage = vision.Image(content=content)\r\nresponse = client.text_detection(image=image)\r\n\r\nprint(response.full_text_annotation.text)\r\n\r\n# print(\"Токен бота:\", settings.telegram_bot_token[:10] + \"...\")\r\n# print(\"База данных:\", settings.database_url)\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test_config.py b/test_config.py
+--- a/test_config.py	(revision 06d68ac415de31006667374c449dd2adf1f3223c)
++++ b/test_config.py	(date 1774081719639)
+@@ -1,5 +1,5 @@
+ # test_config.py
+-from app.config import settings
++from config import settings
+ from google.cloud import vision
+ from pathlib import Path
+ 
+Index: tests/test_ocr.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import sys\r\nfrom pathlib import Path\r\nfrom app.config import settings\r\nfrom app.services.ocr.ocr_service import extract_text\r\nfrom app.services.parser.vocabulary_parser import parse_vocabulary\r\nimport cv2\r\n\r\n\r\nIMAGE_PATH = Path(\"tests/test.jpg\")\r\n\r\n\r\ndef main():\r\n    with open(IMAGE_PATH, \"rb\") as f:\r\n        image_bytes = f.read()\r\n    ocr_result = extract_text(image_bytes)\r\n    print(\"\\nOCR ENGINE:\", ocr_result[\"engine\"])\r\n    print(\"\\nRAW OCR TEXT:\\n\")\r\n    print(ocr_result[\"text\"])\r\n    pairs = parse_vocabulary(ocr_result[\"text\"])\r\n    print(\"\\nPARSED WORDS:\\n\")\r\n    for pair in pairs:\r\n        print(f'{pair[\"en\"]} -> {pair[\"ru\"]}\\n')\r\n    print(f\"TOTAL WORDS: {len(pairs)}\")\r\n\r\n\r\nif __name__ == \"__main__\":\r\n    main()
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/tests/test_ocr.py b/tests/test_ocr.py
+--- a/tests/test_ocr.py	(revision 06d68ac415de31006667374c449dd2adf1f3223c)
++++ b/tests/test_ocr.py	(date 1774081719656)
+@@ -1,6 +1,6 @@
+ import sys
+ from pathlib import Path
+-from app.config import settings
++from config import settings
+ from app.services.ocr.ocr_service import extract_text
+ from app.services.parser.vocabulary_parser import parse_vocabulary
+ import cv2
+Index: tests/test_placeholder.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># @WordFlow9_bot\r\nimport sys\r\nfrom pathlib import Path\r\nROOT_DIR = Path(__file__).parent.parent\r\nsys.path.insert(0, str(ROOT_DIR))\r\nfrom typing import Optional\r\nimport telebot\r\nfrom app.config import settings\r\nfrom app.repositories.sqlite_repositories import SQLiteWordRepository\r\nfrom app.core.models import UserWord\r\nfrom app.core.trainer_impl import Trainer\r\n\r\n\r\nbot = telebot.TeleBot(settings.telegram_bot_token)\r\nsq = SQLiteWordRepository()\r\n# debug\r\nsq.clear()\r\ntrainer = Trainer(sq)\r\n\r\ndef true(user_id, word_id):\r\n    send_message(user_id, \"You're right\")\r\n\r\n\r\ndef false(user_id, word_id):\r\n    send_message(user_id, \"You're wrong\")\r\n\r\ndef Start(user_id):\r\n    id, word, translation = trainer.generate_question()\r\n    buttons = [\"true\", \"false\"]\r\n    training_message(user_id, id, \"Is this true \" + word + \" == \" + translation, buttons)\r\n    \r\nFunction = dict() # TODO объявить функции и импортировать\r\n\r\ndef process(user_id: int, message: str):\r\n    send_message(user_id, \"OK\", [\"Start\"]) # TODO: заменить на функцию из файла core\r\n\r\n\r\n@bot.message_handler(commands=['start'])\r\ndef start(message):\r\n    menu(message.from_user.id)\r\n\r\n\r\n@bot.message_handler(content_types=['text'])\r\ndef get_text_messages(message):\r\n    word, translation = message.text.split()\r\n    sq.add_word(message.from_user.id, word, translation)\r\n    process(message.from_user.id, message.text)\r\n\r\n\r\n@bot.callback_query_handler(func=lambda call: True)\r\ndef callback_function(callback_obj):\r\n    bot.edit_message_text(\r\n        chat_id=callback_obj.message.chat.id,\r\n        message_id=callback_obj.message.message_id,\r\n        text=callback_obj.message.text,\r\n        reply_markup=None  # ← это убирает ВСЕ inline-кнопки\r\n    )\r\n    # Function[callback_obj.data](callback_obj.from_user.id)\r\n    data = callback_obj.data\r\n    if (data == \"Start\") :\r\n        Start(callback_obj.from_user.id)\r\n    else:\r\n        action, word_id_str = data.split(':', 1)\r\n        word_id = int(word_id_str)\r\n        if (action == \"true\"):\r\n            action = True\r\n        else:\r\n            action = False\r\n        correct, new_level = trainer.check_answer(word_id, action)\r\n        if correct:\r\n            bot.send_message(callback_obj.from_user.id, f\"You're right! Correct: {correct}, New level: {new_level}%\")\r\n        else:\r\n            bot.send_message(callback_obj.from_user.id, f\"You're wrong. Correct: {not correct}, New level: {new_level}%\")\r\n\r\n\r\n\r\ndef training_message(user_id: int, word_id: Optional[int], message: str, buttons = []):\r\n    keyboard = telebot.types.InlineKeyboardMarkup()\r\n    true_btn = telebot.types.InlineKeyboardButton(\"True\", callback_data=f\"true:{word_id}\")\r\n    false_btn = telebot.types.InlineKeyboardButton(\"False\", callback_data=f\"false:{word_id}\")\r\n    keyboard = telebot.types.InlineKeyboardMarkup()\r\n    keyboard.row(true_btn, false_btn)\r\n    bot.send_message(user_id, message, reply_markup=keyboard)\r\n\r\n\r\ndef send_message(user_id: int, message: str, buttons = []):\r\n    keyboard = telebot.types.InlineKeyboardMarkup()\r\n    tmp = [telebot.types.InlineKeyboardButton(text=text, callback_data=text) for text in buttons]\r\n    keyboard.row(*tmp)\r\n    bot.send_message(user_id, message,reply_markup=keyboard)\r\n\r\n\r\nTABLE = [\"true\", \"false\"]\r\ndef menu(user_id: int):\r\n    send_message(user_id, \"2 + 2 == 4?\", TABLE)\r\n\r\n\r\nbot.infinity_polling()\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/tests/test_placeholder.py b/tests/test_placeholder.py
+--- a/tests/test_placeholder.py	(revision 06d68ac415de31006667374c449dd2adf1f3223c)
++++ b/tests/test_placeholder.py	(date 1774081719651)
+@@ -5,7 +5,7 @@
+ sys.path.insert(0, str(ROOT_DIR))
+ from typing import Optional
+ import telebot
+-from app.config import settings
++from config import settings
+ from app.repositories.sqlite_repositories import SQLiteWordRepository
+ from app.core.models import UserWord
+ from app.core.trainer_impl import Trainer
+Index: app/services/ocr/google_vision.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from google.cloud import vision\r\nfrom .image_preprocessing import preprocess_image\r\nfrom app.config import settings\r\nimport os\r\n\r\n\r\ndef _get_client():\r\n    global _client\r\n    if settings.google_application_credentials:\r\n        os.environ[\"GOOGLE_APPLICATION_CREDENTIALS\"] = settings.google_application_credentials\r\n    try:\r\n        _client = vision.ImageAnnotatorClient()\r\n    except Exception:\r\n        raise Exception\r\n    return _client\r\n\r\n\r\ndef extract_text_google(input_image_bytes: bytes) -> str:\r\n    client = _get_client()\r\n    input_image = vision.Image(content=input_image_bytes)\r\n    result = client.document_text_detection(image=input_image)\r\n    if result.error.message:\r\n        raise Exception(result.error.message)\r\n    if not result.full_text_annotation:\r\n        return \"\"\r\n    return result.full_text_annotation.text
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/services/ocr/google_vision.py b/app/services/ocr/google_vision.py
+--- a/app/services/ocr/google_vision.py	(revision 06d68ac415de31006667374c449dd2adf1f3223c)
++++ b/app/services/ocr/google_vision.py	(date 1774081719644)
+@@ -1,6 +1,6 @@
+ from google.cloud import vision
+ from .image_preprocessing import preprocess_image
+-from app.config import settings
++from config import settings
+ import os
+ 
+ 
