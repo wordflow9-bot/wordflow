@@ -145,7 +145,6 @@ def parse_vocabulary(text: str) -> list[dict]:
             ru = _fix_case(ru)
             if en and ru:
                 pairs.append({"en": en, "ru": ru})
-                print(en, ru, "\n")
             i += 2
             continue
         if lang1 == "ru" and lang2 == "en":
@@ -155,7 +154,6 @@ def parse_vocabulary(text: str) -> list[dict]:
             ru = _fix_case(ru)
             if en and ru:
                 pairs.append({"en": en, "ru": ru})
-                print(en, ru, "\n")
             i += 2
             continue
         i += 1

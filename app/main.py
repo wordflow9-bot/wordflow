@@ -1,4 +1,4 @@
-# from app.config import settings
+# from config import settings
 # from app.bot import *
 # from dotenv import load_dotenv
 
