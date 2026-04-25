@@ -33,12 +33,12 @@ class UserWord:
     # word_id: Optional[int]
     word: Word
     total_cnt: int = 0
-    correct_cnt: int = 0
+    correct_cnt: int = 0  # TODO: убрать поле
     # mastery_level: int = 0
 
     def mastery_level(self) -> int:  # TODO: переделать на нецелочисленную арифметику
         if self.total_cnt != 0:
-            return round(self.correct_cnt / self.total_cnt * 100)
+            return round(self.correct_cnt / 4 * 100)
         return 0
     # created_at: datetime = None
     # updated_at: datetime = None
@@ -59,7 +59,9 @@ class SessionType(Enum):  # какому микросервису _ принад
     database_add_word = auto()
     database_add_word_choose_translation = auto()
     translator = auto()
-    train_check_answer = auto()
+    train_choose_mode = auto()
+    train_ru_check_answer = auto()
+    train_en_check_answer = auto()
     train_end = auto()
 
 
@@ -67,6 +69,6 @@ class SessionType(Enum):  # какому микросервису _ принад
 @dataclass
 class Session:
     session_type: SessionType
-    crutch: Optional[UserWord] = None
+    metadata: Optional[Word] = None
 
 
