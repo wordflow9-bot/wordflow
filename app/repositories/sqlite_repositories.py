@@ -3,7 +3,7 @@ from typing import List, Optional
 from app.core.models import UserWord, Session, Button, Word
 
 
-# from app.config import settings
+# from config import settings
 
 
 class SQLiteWordRepository:
