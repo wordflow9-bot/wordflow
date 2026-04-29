@@ -214,9 +214,14 @@ __marimo__/
 ._*
 .Spotlight-V100
 .Trashes
+*.db
 *.log
+*.xml
 
 # Telegram bot
 app/__pycache__/
 app/logs/
 app/data/
+.idea/misc.xml
+.idea/vcs.xml
+.idea/wordflow.iml
