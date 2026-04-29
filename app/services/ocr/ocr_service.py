@@ -4,7 +4,7 @@ from .fallback_easyocr import extract_text_easyocr
 
 
 def extract_text(input_image_bytes: bytes) -> dict:
-    try: #WORKS
+    try:  #WORKS
         text = extract_text_google(input_image_bytes)
         if text and text.strip():
             return {

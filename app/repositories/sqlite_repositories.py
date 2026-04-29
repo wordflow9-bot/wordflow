@@ -1,9 +1,20 @@
+import re
 import sqlite3
 from typing import List, Optional
 from app.core.models import UserWord, Session, Button, Word
 
 
-# from config import settings
+def _normalize_text(s: str) -> str:  # нормализует строку (без знаков препинания и с одиночными пробелами)
+    s = s.lower().strip()
+    s = re.sub(r'[\W_]+', ' ', s)
+    s = re.sub(r'\s+', ' ', s)
+    return s
+
+
+def _normalize_word(w: Word) -> Word:  # нормализует строку (без знаков препинания и с одиночными пробелами)
+    w.ru = _normalize_text(w.ru)
+    w.en = _normalize_text(w.en)
+    return w
 
 
 class SQLiteWordRepository:
@@ -16,7 +27,8 @@ class SQLiteWordRepository:
 
     def _init_db(self):
         with self._get_conn() as conn:
-            conn.cursor().execute("""CREATE TABLE IF NOT EXISTS words(id INTEGER PRIMARY KEY AUTOINCREMENT, 
+            conn.cursor().execute("""CREATE TABLE IF NOT EXISTS words(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT, 
                     user_id INTEGER, 
                     word_ru TEXT, 
                     word_en TEXT, 
@@ -38,6 +50,7 @@ class SQLiteWordRepository:
         )
 
     def add_word(self, user_id: int, word: Word) -> UserWord:
+        word = _normalize_word(word)
         with self._get_conn() as conn:
             cur = conn.cursor().execute(
                 "INSERT INTO words (user_id, word_ru, word_en, total_cnt, correct_cnt) VALUES (?, ?, ?, 0, 0)",
@@ -51,6 +64,17 @@ class SQLiteWordRepository:
             cur = conn.cursor().execute("SELECT * FROM words WHERE user_id = ?", (user_id,))
             rows = cur.fetchall()
             return [self._row_to_user_word(row) for row in rows]
+
+    def get_word_id(self, user_id: int, word: Word) -> Optional[int]:
+        with self._get_conn() as conn:
+            cur = conn.cursor().execute(
+                "SELECT id FROM words WHERE user_id = ? AND word_ru = ? AND word_en = ?",
+                (user_id, word.ru, word.en)
+            )
+            row = cur.fetchone()
+            if row:
+                return row[0]
+            return None
 
     def get_by_id(self, word_id: int) -> Optional[UserWord]:
         with self._get_conn() as conn:
