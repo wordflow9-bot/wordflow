@@ -1,6 +1,6 @@
-from google.cloud import vision
-from .image_preprocessing import preprocess_image
+# from .image_preprocessing import preprocess_image
 from config import settings
+from google.cloud import vision
 import os
 
 

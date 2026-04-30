@@ -11,6 +11,5 @@ from app.core.models import Word
 def img_to_word_list(image_bytes: bytes) -> List[Word]:
     ocr_result = extract_text(image_bytes)
     pairs = parse_vocabulary(ocr_result["text"])
-    tmp = [Word(en=dict_['en'], ru=dict_['ru']) for dict_ in pairs]
-    return tmp
+    return pairs
 

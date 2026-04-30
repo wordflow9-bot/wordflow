@@ -1,9 +1,5 @@
 import sys
 from pathlib import Path
-parent_dir = Path(__file__).parent.parent
-sys.path.insert(0, str(parent_dir))
-
-from config import settings
 from app.services.ocr.ocr_service import extract_text
 from app.services.parser.vocabulary_parser import parse_vocabulary
 import cv2
@@ -22,7 +18,7 @@ def main():
     pairs = parse_vocabulary(ocr_result["text"])
     print("\nPARSED WORDS:\n")
     for pair in pairs:
-        print(f'{pair["en"]} -> {pair["ru"]}\n')
+        print(f'{pair.en} -> {pair.ru}\n')
     print(f"TOTAL WORDS: {len(pairs)}")
 
 

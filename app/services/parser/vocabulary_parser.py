@@ -1,5 +1,8 @@
 import re
+from typing import List
+
 from .normalizer import normalize_text
+from ...core.models import Word
 
 
 def _is_mostly_cyrillic(text: str) -> bool:
@@ -109,7 +112,7 @@ def extract_elements(text: str):
     return elements
 
 
-def split_mixed_elements(elements: list):
+def split_mixed_elements(elements: List[str]):
     if len(elements) < 2:
         return elements
     groups = []
@@ -127,7 +130,7 @@ def split_mixed_elements(elements: list):
     return groups
 
     
-def parse_vocabulary(text: str) -> list[dict]:
+def parse_vocabulary(text: str) -> List[Word]:
     normalized = normalize_text(text)
     elements = extract_elements(normalized)
     elements = split_mixed_elements(elements)
@@ -138,23 +141,18 @@ def parse_vocabulary(text: str) -> list[dict]:
         second = elements[i + 1]
         lang1 = detect_language(first)
         lang2 = detect_language(second)
+        if lang1 == "ru":
+            lang1, lang2 = lang2, lang1
+            first, second = second, first
         if lang1 == "en" and lang2 == "ru":
             en = _correct(first)
             en = _fix_case(en)
             ru = _correct(second)
             ru = _fix_case(ru)
-            if en and ru:
-                pairs.append({"en": en, "ru": ru})
-            i += 2
-            continue
-        if lang1 == "ru" and lang2 == "en":
-            en = _correct(second)
-            en = _fix_case(en)
-            ru = _correct(first)
-            ru = _fix_case(ru)
-            if en and ru:
-                pairs.append({"en": en, "ru": ru})
+            if en and ru:  # TODO: Нужна ли проверка
+                pairs.append(Word(en=en, ru=ru))
             i += 2
             continue
         i += 1
     return pairs
+

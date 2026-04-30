@@ -8,7 +8,7 @@ import warnings
 warnings.filterwarnings("ignore", message=".*pin_memory.*MPS.*")
 
 
-# reader = easyocr.Reader(['ru', 'en'], gpu=False) TODO: вернуть ocr
+reader = easyocr.Reader(['ru', 'en'], gpu=False)  # TODO: вернуть ocr
 
 
 def extract_text_easyocr(input_image_bytes: bytes) -> str:

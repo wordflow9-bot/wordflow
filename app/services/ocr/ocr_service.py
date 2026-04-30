@@ -4,7 +4,7 @@ from .fallback_easyocr import extract_text_easyocr
 
 
 def extract_text(input_image_bytes: bytes) -> dict:
-    try:  #WORKS
+    try:  # WORKS
         text = extract_text_google(input_image_bytes)
         if text and text.strip():
             return {
@@ -18,24 +18,24 @@ def extract_text(input_image_bytes: bytes) -> dict:
             }
 
     except ResourceExhausted:
-        # print("Resource Exausted") #debug
+        print("Resource Exhausted")  # debug
         pass
 
     except GoogleAPIError:
-        # print("Google API Error") #debug
+        print("Google API Error")  # debug
         pass
 
-    except Exception:
-        # print("Unkown Exception") #debug
+    except Exception as e:
+        print(f"Unknown Exception {e}")
         pass 
 
     try:
         text = extract_text_easyocr(input_image_bytes)
         if text and text.strip():
-                return {
-                    "engine": "easyocr",
-                    "text": text
-                }
+            return {
+                "engine": "easyocr",
+                "text": text
+            }
         elif not text:
             return {
                 "engine": "easyocr",
