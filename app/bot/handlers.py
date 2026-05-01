@@ -49,11 +49,11 @@ def handle_photo(message):
         # Скачиваем в байты
         downloaded_file = bot.download_file(file_info.file_path)
         # Оборачиваем в поток (файлоподобный объект)
-        photo_stream = BytesIO(downloaded_file)
-        interaction.process_photo(user_id, photo_stream)
+        # photo_stream = BytesIO(downloaded_file) # Зачем? OCR же работает с байтами, а не с потоками. Это ломает код.
+        interaction.process_photo(user_id, downloaded_file)
     except Exception as e:
         print(f"Ошибка при приеме фото : {e}")
 
 
-bot.infinity_polling()
+# bot.infinity_polling()
 

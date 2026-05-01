@@ -1,5 +1,7 @@
 import re
 import sqlite3
+import os
+from config import settings
 from typing import List, Optional
 from app.core.models import UserWord, Session, Button, Word
 
@@ -18,8 +20,8 @@ def _normalize_word(w: Word) -> Word:  # нормализует строку (б
 
 
 class SQLiteWordRepository:
-    def __init__(self, db_path: str = '/wordflow/app/repositories/database.db'):
-        self.db_path = db_path
+    def __init__(self, db_path: str = None):
+        self.db_path = db_path or os.path.abspath(settings.database_url)
         self._init_db()
 
     def _get_conn(self):
@@ -107,8 +109,8 @@ class SQLiteWordRepository:
 
 
 class SQLiteSessionRepository:
-    def __init__(self, db_path: str = '/wordflow/app/repositories/database.db'):
-        self.db_path = db_path
+    def __init__(self, db_path: str = None):
+        self.db_path = db_path or os.path.abspath(settings.database_url)
         self._init_db()
 
     def _get_conn(self):
@@ -136,8 +138,8 @@ class SQLiteSessionRepository:
 
 
 class SQLiteButtonRepository:
-    def __init__(self, db_path: str = '/wordflow/app/repositories/database.db'):
-        self.db_path = db_path
+    def __init__(self, db_path: str = None):
+        self.db_path = db_path or os.path.abspath(settings.database_url)
         self._init_db()
 
     def _get_conn(self):
@@ -169,7 +171,7 @@ class SQLiteButtonRepository:
     def add_button(self, user_id: int, button: Button):
         json_metadata = ''
         if button.metadata is not None:
-            json_metadata = Word.to_json(button.metadata)
+            json_metadata = button.metadata.to_json()
         with self._get_conn() as conn:
             conn.cursor().execute(
                 "INSERT INTO buttons (user_id, message_id, metadata) VALUES(?, ?, ?)",

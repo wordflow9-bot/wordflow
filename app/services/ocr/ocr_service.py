@@ -26,7 +26,7 @@ def extract_text(input_image_bytes: bytes) -> dict:
         pass
 
     except Exception as e:
-        print(f"Unknown Exception {e}")
+        print(f"Unknown Exception: {e}")
         pass 
 
     try:
@@ -41,6 +41,6 @@ def extract_text(input_image_bytes: bytes) -> dict:
                 "engine": "easyocr",
                 "text": "not found"
             }
-    except Exception:
-        print(Exception)
+    except Exception as e:
+        print(f"Unknown Exception: {e}")
         raise RuntimeError("OCR temporarily unavailable")

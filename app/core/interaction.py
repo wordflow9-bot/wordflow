@@ -57,13 +57,13 @@ class Interaction:
                           buttons=[[self.translator.translate(message), "Выбрать перевод"]])
 
     def add_word_translation(self, user_id: int, message: str):
-        user_word = self.session_repo.get_session(user_id).metadata
+        word = self.session_repo.get_session(user_id).metadata
         lang = self.translator.language(message)
         if lang == 'ru':
-            user_word.word.ru = message
+            word.ru = message
         elif lang == 'en':
-            user_word.word.en = message
-        self.user_word_repo.add_word(user_id, user_word.word)
+            word.en = message
+        self.user_word_repo.add_word(user_id, word)
         self.main_menu(user_id)
 
     def list_words(self, user_id: int):
@@ -74,6 +74,12 @@ class Interaction:
         self.send_message(user_id, message)
 
     def ask_question(self, user_id: int):
+        user_words = self.user_word_repo.get_all(user_id)
+        if not user_words:
+            self.send_message(user_id, "У вас нет добавленных слов. Сначала добавьте слова в базу данных.")
+            self.main_menu(user_id) 
+            return
+
         sess_type = self.session_repo.get_session(user_id).session_type
         if sess_type == SessionType.train_ru_check_answer:
             mode = "ru"
@@ -90,6 +96,11 @@ class Interaction:
 
     def check_translation(self, user_id: int, message: str):
         question = self.session_repo.get_session(user_id).metadata
+        if question is None:
+            self.send_message(user_id, "Ошибка: нет активного вопроса. Попробуйте начать тренировку заново.")
+            self.main_menu(user_id)
+            return
+        
         mode = self.session_repo.get_session(user_id).session_type
         if mode == SessionType.train_ru_check_answer:
             question.en = message
@@ -186,13 +197,13 @@ class Interaction:
         try:
             words = img_to_word_list(photo_bytes)
             if not words:
-                self.send_message(user_id, "❌ Не удалось распознать текст")
+                self.send_message(user_id, "Не удалось распознать текст")
                 return
-            for word in Word:
+            for word in words:
                 self.send_message(user_id, f"{word.ru} – {word.en}",
-                                  buttons=[["Добавить", "Переводчик, добавить слово"]], metadata=Word)
+                                  buttons=[["Добавить", "Переводчик, добавить слово"]], metadata=word)
         except Exception as e:
-            self.send_message(user_id, "❌ Не удалось распознать текст")
+            self.send_message(user_id, "Не удалось распознать текст")
             print(f"Ошибка при распознании фото: {e}")
             self.main_menu(user_id)
 
