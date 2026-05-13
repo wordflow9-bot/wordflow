@@ -109,9 +109,9 @@ class Interaction:
             ["Eще раз", "Задать вопрос"],
             ["Меню", "Меню"]
         ]
-        if level is None: # ?
+        if level is None:
             answer = "неверен"
-            self.send_message(user_id, f'Ваш ответ {answer}.', buttons)
+            self.send_message(user_id, f'Ваш ответ {answer}', buttons)
         else:
             answer = "верен"
             self.send_message(user_id, f'Ваш ответ {answer}. Ваш успех в изучении слова {level}%', buttons)
