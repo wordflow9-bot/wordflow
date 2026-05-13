@@ -79,7 +79,6 @@ class Interaction:
             self.send_message(user_id, "У вас нет добавленных слов. Сначала добавьте слова в базу данных.")
             self.main_menu(user_id) 
             return
-
         sess_type = self.session_repo.get_session(user_id).session_type
         if sess_type == SessionType.train_ru_check_answer:
             mode = "ru"
@@ -100,7 +99,6 @@ class Interaction:
             self.send_message(user_id, "Ошибка: нет активного вопроса. Попробуйте начать тренировку заново.")
             self.main_menu(user_id)
             return
-        
         mode = self.session_repo.get_session(user_id).session_type
         if mode == SessionType.train_ru_check_answer:
             question.en = message
@@ -108,10 +106,10 @@ class Interaction:
             question.ru = message
         level = self.trainer.check_answer(user_id, word=question)
         buttons = [
-            ["Eще раз", "Тренировка"],
+            ["Eще раз", "Задать вопрос"],
             ["Меню", "Меню"]
         ]
-        if level is None:
+        if level is None: # ?
             answer = "неверен"
             self.send_message(user_id, f'Ваш ответ {answer}.', buttons)
         else:
@@ -215,7 +213,8 @@ class Interaction:
                  "Переводчик": self.button_translator,
                  "Переводчик, добавить слово": self.button_translator_add_word,
                  "Режим RU->EN": lambda user_id, message_id: self.button_tr_set_mode(user_id, message_id, mode="ru"),
-                 "Режим EN->RU": lambda user_id, message_id: self.button_tr_set_mode(user_id, message_id, mode="en")
+                 "Режим EN->RU": lambda user_id, message_id: self.button_tr_set_mode(user_id, message_id, mode="en"),
+                 "Задать вопрос": self.button_ask_question
                  }
         return _dict[button]
 
