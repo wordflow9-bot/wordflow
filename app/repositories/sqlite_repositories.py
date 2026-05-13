@@ -7,7 +7,7 @@ from app.core.models import UserWord, Session, Button, Word
 
 
 def _normalize_text(s: str) -> str:  # нормализует строку (без знаков препинания и с одиночными пробелами)
-    s = s.lower().strip()
+    s = s.capitalize().strip()
     s = re.sub(r'[\W_]+', ' ', s)
     s = re.sub(r'\s+', ' ', s)
     return s
