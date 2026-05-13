@@ -35,7 +35,8 @@ class SQLiteWordRepository:
                     word_ru TEXT, 
                     word_en TEXT, 
                     total_cnt INTEGER, 
-                    correct_cnt INTEGER)""")
+                    correct_cnt INTEGER,
+                    UNIQUE (word_ru, word_en))""")
             conn.commit()
 
     @staticmethod
