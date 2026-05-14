@@ -51,3 +51,6 @@ def handle_photo(message):
     except Exception as e:
         print(f"Ошибка при приеме фото : {e}")
 
+@bot.message_handler(commands=['clear'])
+def clear_all_words(message):
+    interaction.clear_all_words(message.from_user.id)

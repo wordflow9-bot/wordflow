@@ -63,7 +63,9 @@ class SessionType(Enum):  # какому микросервису _ принад
     train_ru_check_answer = auto()
     train_en_check_answer = auto()
     train_end = auto()
-
+    photo_mode = auto()
+    database_delete_word = auto() 
+    confirm_clear_all = auto()
 
 @dataclass_json
 @dataclass
