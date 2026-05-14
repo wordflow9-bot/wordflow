@@ -228,7 +228,7 @@ class Interaction:
     def button_add_word(self, user_id: int, message_id: int):
         self.delete_button(user_id, message_id)
         self.session_repo.set_session(user_id, Session(SessionType.database_add_word))
-        self.send_message(user_id, f"Введите слово")
+        self.send_message(user_id, f"Введите слово или выражение на русском или на английском языке", buttons=[["Назад", "Меню"]])
 
     def button_add_word_translation(self, user_id: int, message_id: int):
         self.delete_button(user_id, message_id)
