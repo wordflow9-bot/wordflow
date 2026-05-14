@@ -66,6 +66,8 @@ class SessionType(Enum):  # какому микросервису _ принад
     photo_mode = auto()
     database_delete_word = auto() 
     confirm_clear_all = auto()
+    list_actions_menu = auto()
+    list_edit_menu = auto()
 
 @dataclass_json
 @dataclass
