@@ -69,7 +69,8 @@ class Interaction:
 
     def list_edit_menu(self, user_id: int, message_id: int):
         self.session_repo.set_session(user_id, Session(SessionType.list_edit_menu))
-        buttons = [[["Загрузить Фото", "Загрузить фото"]],
+        buttons = [[["Добавить слово", "Добавить слово"]],
+                [["Загрузить Фото", "Загрузить фото"]],
                 [["Удалить слово", "Удалить слово"]],
                 [["Очистить всё", "Очистить всё"]],
                 [["Назад", "Мой список"]]]
