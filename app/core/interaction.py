@@ -53,6 +53,7 @@ class Interaction:
         self.delete_buttons(user_id)
         self.session_repo.set_session(user_id, Session(SessionType.main_menu))
         buttons = [[["Добавить слово", "Добавить слово"]],
+                   [["Загрузить фото", "Загрузить фото"]],
                    [["Тренировка", "Тренировка"]],
                    [["Переводчик", "Переводчик"]],
                    [["Мой список", "Мой список"]]]
@@ -293,7 +294,7 @@ class Interaction:
                 self.main_menu(user_id)
         else:
             self.send_message(user_id, 
-                                     "Для загрузки фото используйте команду: /menu → Фото")
+                                     "Для загрузки фото запустите режим распознавания фото через главное меню")
 
     def process_button(self, button: str) -> Callable[[int, int], None]:
         _dict = {"Тренировка": self.button_tr_choose_mode,
