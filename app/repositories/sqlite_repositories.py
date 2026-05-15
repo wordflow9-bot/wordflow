@@ -102,6 +102,12 @@ class SQLiteWordRepository:
             lvl = self.get_by_id(id_).mastery_level()
             return lvl
 
+    def clear_user_words(self, user_id: int) -> bool:
+        with self._get_conn() as conn:
+            conn.cursor().execute("DELETE FROM words WHERE user_id = ?", (user_id,))
+            conn.commit()
+        return True
+
     def clear(self):
         with self._get_conn() as conn:
             conn.cursor().execute("""DELETE FROM words""")

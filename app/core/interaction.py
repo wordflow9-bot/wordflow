@@ -52,27 +52,27 @@ class Interaction:
     def main_menu(self, user_id: int, message_id: int = 0):
         self.delete_buttons(user_id)
         self.session_repo.set_session(user_id, Session(SessionType.main_menu))
-        buttons = [["Добавить слово", "Добавить слово"],
-                   ["Тренировка", "Тренировка"],
-                   ["Переводчик", "Переводчик"],
-                   ["Мой список", "Мой список"]]
+        buttons = [[["Добавить слово", "Добавить слово"]],
+                   [["Тренировка", "Тренировка"]],
+                   [["Переводчик", "Переводчик"]],
+                   [["Мой список", "Мой список"]]]
         success = self.edit_message(user_id, message_id, "Что Вы хотите делать?", buttons)
         if not success:
             self.send_message(user_id, "Что Вы хотите делать?", buttons)
 
     def list_actions_menu(self, user_id: int, message_id: int):
         self.session_repo.set_session(user_id, Session(SessionType.list_actions_menu))
-        buttons = [["Просмотреть", "Список слов"],
-                ["Изменить список", "Меню изменения"],
-                ["Назад", "Меню"]]
+        buttons = [[["Просмотреть", "Список слов"]],
+                [["Изменить список", "Меню изменения"]],
+                [["Назад", "Меню"]]]
         self.edit_message(user_id, message_id, "Управление списком слов", buttons)
 
     def list_edit_menu(self, user_id: int, message_id: int):
         self.session_repo.set_session(user_id, Session(SessionType.list_edit_menu))
-        buttons = [["Загрузить Фото", "Загрузить фото"],
-                ["Удалить слово", "Удалить слово"],
-                ["Очистить всё", "Очистить всё"],
-                ["Назад", "Мой список"]]
+        buttons = [[["Загрузить Фото", "Загрузить фото"]],
+                [["Удалить слово", "Удалить слово"]],
+                [["Очистить всё", "Очистить всё"]],
+                [["Назад", "Мой список"]]]
         self.edit_message(user_id, message_id, "Изменить список", buttons)
 
     def add_word(self, user_id: int, message: str):
@@ -80,7 +80,7 @@ class Interaction:
                                       Session(SessionType.database_add_word_choose_translation
                                               , self._init_word(message)))
         self.send_message(user_id, f'Выберите перевод или напишите свой',
-                          buttons=[[self.translator.translate(message), "Выбрать перевод"]])
+                          buttons=[[[self.translator.translate(message), "Выбрать перевод"]]])
 
     def add_word_translation(self, user_id: int, message: str):
         word = self.session_repo.get_session(user_id).metadata
@@ -117,19 +117,19 @@ class Interaction:
         message = "Ваш список слов:\n"
         for user_word in user_words:
             message += f"{user_word.word.ru.capitalize()} - {user_word.word.en.capitalize()} {user_word.mastery_level()}%\n"
-        buttons = [["Удалить слово", "Удалить слово"],
-               ["Назад", "Мой список"]]
+        buttons = [[["Удалить слово", "Удалить слово"]],
+               [["Назад", "Мой список"]]]
         self.send_message(user_id, message, buttons)
 
     def clear_all_words(self, user_id: int, message_id: int):
         self.delete_button(user_id, message_id)
         self.session_repo.set_session(user_id, Session(SessionType.confirm_clear_all))
-        buttons = [["Да, удалить все", "Подтвердить удаление"],
-                   ["Отмена", "Меню"]]
+        buttons = [[["Да, удалить все", "Подтвердить удаление"]],
+                   [["Отмена", "Меню"]]]
         self.send_message(user_id, "Вы уверены? Это удалит все слова из вашего списка.", buttons)
 
-    def confirm_clear_all_words(self, user_id: int):
-        self.user_word_repo.clear()
+    def confirm_clear_all_words(self, user_id: int, message_id: int = 0):
+        self.user_word_repo.clear_user_words(user_id)
         self.send_message(user_id, "Все слова удалены. Ваш список пуст.")
         self.main_menu(user_id)
 
@@ -166,9 +166,8 @@ class Interaction:
             question.ru = message
         level = self.trainer.check_answer(user_id, word=question)
         buttons = [
-            ["Eще раз", "Задать вопрос"],
-            ["Меню", "Меню"]
-        ]
+            [["Eще раз", "Задать вопрос"]],
+            [["Меню", "Меню"]]]
         if level is None:
             answer = "неверен"
             self.send_message(user_id, f'Ваш ответ {answer}', buttons)
@@ -180,10 +179,10 @@ class Interaction:
         lang = self.translator.language(message)
         translation = self.translator.translate(message)
         if lang == 'ru':
-            buttons = [["Добавить слово", "Переводчик, добавить слово"]]
+            buttons = [[["Добавить слово", "Переводчик, добавить слово"]], [["Назад", "Меню"]]]
             self.send_message(user_id, translation, buttons, metadata=Word(ru=message, en=translation))
         elif lang == 'en':
-            buttons = [["Добавить слово", "Переводчик, добавить слово"]]
+            buttons = [[["Добавить слово", "Переводчик, добавить слово"]], [["Назад", "Меню"]]]
             self.send_message(user_id, translation, buttons, metadata=Word(en=message, ru=translation))
         elif lang == 'un':
             self.send_message(user_id, translation)
@@ -224,11 +223,12 @@ class Interaction:
         if word is not None:
             self.user_word_repo.add_word(user_id, word)
             self.delete_button(user_id, message_id)
+        self.main_menu(user_id)
 
     def button_add_word(self, user_id: int, message_id: int):
         self.delete_button(user_id, message_id)
         self.session_repo.set_session(user_id, Session(SessionType.database_add_word))
-        self.send_message(user_id, f"Введите слово или выражение на русском или на английском языке", buttons=[["Назад", "Меню"]])
+        self.send_message(user_id, f"Введите слово или выражение на русском или на английском языке", buttons=[[["Назад", "Меню"]]])
 
     def button_add_word_translation(self, user_id: int, message_id: int):
         self.delete_button(user_id, message_id)
@@ -247,8 +247,8 @@ class Interaction:
         message = "Выберите номер слова для удаления:\n\n"
         for idx, user_word in enumerate(user_words, 1):
             message += f"{idx}. {user_word.word.ru.capitalize()} – {user_word.word.en.capitalize()} ({user_word.mastery_level()}%)\n"
-        message += "\nНапишите номер слова или используйте команду /menu для отмены"
-        self.send_message(user_id, message)
+        message += "\nНапишите номер слова для удаления"
+        self.send_message(user_id, message, buttons=[[["Отмена", "Меню"]]])
 
     def button_tr_set_mode(self, user_id: int, message_id: int, mode: str):
         self.delete_button(user_id, message_id)
@@ -264,9 +264,9 @@ class Interaction:
         self.delete_button(user_id, message_id)
         self.session_repo.set_session(user_id, Session(SessionType.train_choose_mode))
         buttons = [
-            ["EN->RU", "Режим EN->RU"],
-            ["RU->EN", "Режим RU->EN"]
-        ]
+            [["EN->RU", "Режим EN->RU"]],
+            [["RU->EN", "Режим RU->EN"]],
+            [["Назад", "Меню"]]]
         self.send_message(user_id, message="Выберите режим", buttons=buttons)
 
     def button_photo_mode(self, user_id: int, message_id: int):
@@ -285,7 +285,7 @@ class Interaction:
                     return
                 for word in words:
                     self.send_message(user_id, f"{word.ru} – {word.en}",
-                                    buttons=[["Добавить", "Переводчик, добавить слово"]], metadata=word)
+                                    buttons=[[["Добавить", "Переводчик, добавить слово"]]], metadata=word)
             except Exception as e:
                 self.send_message(user_id, "Не удалось распознать текст")
                 print(f"Ошибка при распознании фото: {e}")
@@ -308,7 +308,7 @@ class Interaction:
                  "Удалить слово": self.button_delete_word,
                  "Список слов": self.list_words,
                  "Загрузить фото": self.button_photo_mode,
-                 "Очистить всё": self.confirm_clear_all_words,
+                 "Очистить всё": self.clear_all_words,
                  "Меню изменения": self.list_edit_menu,
                  "Мой список": self.list_actions_menu
                  }
