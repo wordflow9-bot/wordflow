@@ -221,11 +221,14 @@ class Interaction:
         self.send_message(user_id, f"Введите слово")
 
     def button_translator_add_word(self, user_id: int, message_id: int):
+        self.delete_button(user_id, message_id)
         word = self.button_repo.get_button_metadata(user_id, message_id)
         if word is not None:
-            self.user_word_repo.add_word(user_id, word)
-            self.delete_button(user_id, message_id)
-        self.main_menu(user_id)
+            result = self.user_word_repo.add_word(user_id, word)
+            if result is None:
+                self.send_message(user_id, f"Слово '{word.ru} – {word.en}' уже есть в вашем списке", buttons=[[["Меню", "Меню"]]])
+            else:                
+                self.send_message(user_id, f"Слово '{word.ru} – {word.en}' добавлено в список", buttons=[[["Меню", "Меню"]]])
 
     def button_add_word(self, user_id: int, message_id: int):
         self.delete_button(user_id, message_id)
@@ -235,7 +238,11 @@ class Interaction:
     def button_add_word_translation(self, user_id: int, message_id: int):
         self.delete_button(user_id, message_id)
         word = self.session_repo.get_session(user_id).metadata
-        self.user_word_repo.add_word(user_id, word)
+        result = self.user_word_repo.add_word(user_id, word)
+        if result is None:
+            self.send_message(user_id, f"Слово '{word.ru} – {word.en}' уже есть в вашем списке")
+        else:
+            self.send_message(user_id, f"Слово '{word.ru} – {word.en}' добавлено в список")
         self.main_menu(user_id)
 
     def button_delete_word(self, user_id: int, message_id: int):

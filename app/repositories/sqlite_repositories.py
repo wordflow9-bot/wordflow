@@ -54,6 +54,8 @@ class SQLiteWordRepository:
 
     def add_word(self, user_id: int, word: Word) -> UserWord:
         word = _normalize_word(word)
+        if self.get_word_id(user_id, word) is not None:
+            return None
         with self._get_conn() as conn:
             cur = conn.cursor().execute(
                 "INSERT INTO words (user_id, word_ru, word_en, total_cnt, correct_cnt) VALUES (?, ?, ?, 0, 0)",
