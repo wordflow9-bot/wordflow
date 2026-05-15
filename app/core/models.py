@@ -64,7 +64,7 @@ class SessionType(Enum):  # какому микросервису _ принад
     train_en_check_answer = auto()
     train_end = auto()
     photo_mode = auto()
-    database_delete_word = auto() 
+    database_delete_words = auto() 
     confirm_clear_all = auto()
     list_actions_menu = auto()
     list_edit_menu = auto()

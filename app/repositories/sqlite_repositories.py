@@ -61,7 +61,7 @@ class SQLiteWordRepository:
                 "INSERT INTO words (user_id, word_ru, word_en, total_cnt, correct_cnt) VALUES (?, ?, ?, 0, 0)",
                 (user_id, word.ru, word.en)
             )
-            id_ = cur.lastrowid
+            id_ = cur.lastrowid - 1
             return self.get_by_id(id_)
 
     def get_all(self, user_id) -> List[UserWord]:
@@ -71,6 +71,7 @@ class SQLiteWordRepository:
             return [self._row_to_user_word(row) for row in rows]
 
     def get_word_id(self, user_id: int, word: Word) -> Optional[int]:
+        word = _normalize_word(word)
         with self._get_conn() as conn:
             cur = conn.cursor().execute(
                 "SELECT id FROM words WHERE user_id = ? AND word_ru = ? AND word_en = ?",

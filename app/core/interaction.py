@@ -91,23 +91,28 @@ class Interaction:
             word.ru = message
         elif lang == 'en':
             word.en = message
-        self.user_word_repo.add_word(user_id, word)
+        result = self.user_word_repo.add_word(user_id, word)
+        if result is None:
+            self.send_message(user_id, f"Слово '{word.ru} – {word.en}' уже есть в вашем списке")
+        else:                
+            self.send_message(user_id, f"Слово '{word.ru} – {word.en}' добавлено в список")
         self.main_menu(user_id)
 
-    def delete_word(self, user_id: int, message: str):
+    def delete_words(self, user_id: int, message: str):
         user_words = self.user_word_repo.get_all(user_id)
         try:
-            word_idx = int(message) - 1
-            if 0 <= word_idx < len(user_words):
+            indexes_to_delete = [int(idx) - 1 for idx in message.split()]
+            for idx in indexes_to_delete:
+                if idx < 0 or idx >= len(user_words):
+                    raise ValueError
+            for word_idx in sorted(indexes_to_delete):
                 word_to_delete = user_words[word_idx]
                 self.user_word_repo.delete_word(word_to_delete.id)
                 self.send_message(user_id, 
                                 f"Слово '{word_to_delete.word.ru.capitalize()} - {word_to_delete.word.en.capitalize()}' удалено из списка.")
-                self.main_menu(user_id)
-            else:
-                self.send_message(user_id, "Неверный номер. Попробуйте снова.")
         except ValueError:
-            self.send_message(user_id, "Введите корректный номер слова.")
+            self.send_message(user_id, "Введите корректные номера слов для удаления через пробел")
+        self.main_menu(user_id)
 
     def list_words(self, user_id: int, message_id: int = 0):
         self.delete_button(user_id, message_id)
@@ -203,8 +208,8 @@ class Interaction:
             self.add_word_translation(user_id, message)
         elif session.session_type == SessionType.translator:
             self.process_translate(user_id, message)
-        elif session.session_type == SessionType.database_delete_word:
-            self.delete_word(user_id, message)
+        elif session.session_type == SessionType.database_delete_words:
+            self.delete_words(user_id, message)
         elif session.session_type == SessionType.confirm_clear_all:
             self.confirm_clear_all_words(user_id)
         else:
@@ -226,9 +231,10 @@ class Interaction:
         if word is not None:
             result = self.user_word_repo.add_word(user_id, word)
             if result is None:
-                self.send_message(user_id, f"Слово '{word.ru} – {word.en}' уже есть в вашем списке", buttons=[[["Меню", "Меню"]]])
+                self.send_message(user_id, f"Слово '{word.ru} – {word.en}' уже есть в вашем списке")
             else:                
-                self.send_message(user_id, f"Слово '{word.ru} – {word.en}' добавлено в список", buttons=[[["Меню", "Меню"]]])
+                self.send_message(user_id, f"Слово '{word.ru} – {word.en}' добавлено в список")
+            self.main_menu(user_id)
 
     def button_add_word(self, user_id: int, message_id: int):
         self.delete_button(user_id, message_id)
@@ -252,11 +258,11 @@ class Interaction:
             self.send_message(user_id, "У вас пока нет слов в списке.")
             self.main_menu(user_id)
             return
-        self.session_repo.set_session(user_id, Session(SessionType.database_delete_word))   
+        self.session_repo.set_session(user_id, Session(SessionType.database_delete_words))   
         message = "Выберите номер слова для удаления:\n\n"
         for idx, user_word in enumerate(user_words, 1):
             message += f"{idx}. {user_word.word.ru.capitalize()} – {user_word.word.en.capitalize()} ({user_word.mastery_level()}%)\n"
-        message += "\nНапишите номер слова для удаления"
+        message += "\nНапишите номера слов для удаления через пробел"
         self.send_message(user_id, message, buttons=[[["Отмена", "Меню"]]])
 
     def button_tr_set_mode(self, user_id: int, message_id: int, mode: str):
@@ -281,8 +287,7 @@ class Interaction:
     def button_photo_mode(self, user_id: int, message_id: int):
         self.delete_button(user_id, message_id)
         self.session_repo.set_session(user_id, Session(SessionType.photo_mode))
-        self.send_message(user_id, "Отправьте фотографию для распознавания и перевода текста.\n"
-                                "Используйте команду /menu для возврата в главное меню.")
+        self.send_message(user_id, "Отправьте фотографию для распознавания и перевода текста.\n", buttons=[[["Меню", "Меню"]]])
 
     def process_photo(self, user_id: int, photo_bytes: bytes):
         session = self.session_repo.get_session(user_id)
