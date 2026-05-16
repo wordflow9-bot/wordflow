@@ -24,7 +24,7 @@ class Interaction:
             return Word(en=word, ru=self.translator.translate(word))
         return Word(ru=word, en=word)
 
-    def send_message(self, user_id: int, message: str, buttons: Optional[List[List[str]]] = None,
+    def send_message(self, user_id: int, message: str, buttons: Optional[List[List[List[str]]]] = None,
                      metadata: Optional[Word] = None):
         if buttons is None:
             self.gateway.send_message(user_id, message)
@@ -42,7 +42,7 @@ class Interaction:
         for button in self.button_repo.get_list_buttons(user_id):
             self.delete_button(user_id, button.message_id)
 
-    def edit_message(self, user_id: int, message_id: int, text: str, buttons: Optional[List[List[str]]] = None):
+    def edit_message(self, user_id: int, message_id: int, text: str, buttons: Optional[List[List[List[str]]]] = None):
         success = self.gateway.edit_message_text(user_id, message_id, text, buttons or [])
         if success and buttons is not None:
             self.button_repo.delete_button(user_id, message_id)
@@ -60,6 +60,42 @@ class Interaction:
         success = self.edit_message(user_id, message_id, "Что Вы хотите делать?", buttons)
         if not success:
             self.send_message(user_id, "Что Вы хотите делать?", buttons)
+
+    def command_add_word(self, user_id: int):
+        self.delete_buttons(user_id)
+        self.session_repo.set_session(user_id, Session(SessionType.database_add_word))
+        self.send_message(user_id, f"Введите слово или выражение на русском или на английском языке",
+                          buttons=[[["Назад", "Меню"]]])
+
+    def command_tr_choose_mode(self, user_id: int):
+        self.delete_buttons(user_id)
+        self.session_repo.set_session(user_id, Session(SessionType.train_choose_mode))
+        buttons = [
+            [["EN->RU", "Режим EN->RU"]],
+            [["RU->EN", "Режим RU->EN"]]
+        ]
+        self.send_message(user_id, message="Выберите режим", buttons=buttons)
+
+    def command_help(self, user_id: int):
+        self.delete_buttons(user_id)
+        message = (
+            "📖 СПРАВКА ПО БОТУ\n\n"
+            " Бот создан для упрощения изучения слов.\n\n"
+            "📌 КОМАНДЫ:\n"
+            "/start — Главное меню\n"
+            "/train — Тренировка\n"
+            "/add — Добавить слово\n"
+            "/list — Просмотреть список слов\n"
+            "/clear — Очистить весь список\n"
+            "/menu — Вернуться в меню\n\n"
+            "💡 КАК ПОЛЬЗОВАТЬСЯ:\n"
+            "• Отправляйте слова текстом для перевода или добавления.\n"
+            "• Используйте кнопки под сообщениями для навигации.\n"
+            "• В режиме «Загрузить фото» отправьте картинку с текстом(!обязательно пары слово-перевод) "
+            "в сжатом формате.\n\n"
+            "Если бот перестал реагировать, отправьте /start или /menu для сброса состояния."
+        )
+        self.send_message(user_id, message=message)
 
     def list_actions_menu(self, user_id: int, message_id: int):
         self.session_repo.set_session(user_id, Session(SessionType.list_actions_menu))
