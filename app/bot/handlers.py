@@ -10,11 +10,6 @@ bot = telebot.TeleBot(TOKEN)
 interaction = Interaction(TOKEN)
 
 
-# @bot.message_handler(commands=['help']) TODO: написать help() в interaction
-# def _help(message):
-#     interaction.help(message.from_user.id)
-
-
 @bot.message_handler(commands=['list'])
 def _list(message):
     interaction.list_words(message.from_user.id)
