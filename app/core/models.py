@@ -68,6 +68,7 @@ class SessionType(Enum):  # какому микросервису _ принад
     confirm_clear_all = auto()
     list_actions_menu = auto()
     list_edit_menu = auto()
+    confirm_delete_word = auto()
 
 @dataclass_json
 @dataclass
