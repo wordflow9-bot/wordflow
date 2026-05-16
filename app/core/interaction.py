@@ -97,6 +97,13 @@ class Interaction:
         )
         self.send_message(user_id, message=message)
 
+    def clear_all_words(self, user_id: int, message_id: int = 0):
+            self.delete_button(user_id, message_id)
+            self.session_repo.set_session(user_id, Session(SessionType.confirm_clear_all))
+            buttons = [[["Да, удалить все", "Подтвердить удаление"]],
+                    [["Отмена", "Меню"]]]
+            self.send_message(user_id, "Вы уверены? Это удалит все слова из вашего списка.", buttons)
+
     def list_actions_menu(self, user_id: int, message_id: int):
         self.session_repo.set_session(user_id, Session(SessionType.list_actions_menu))
         buttons = [[["Просмотреть", "Список слов"]],
@@ -163,13 +170,6 @@ class Interaction:
         buttons = [[["Удалить слово", "Удалить слово"]],
                [["Назад", "Мой список"]]]
         self.send_message(user_id, message, buttons)
-
-    def clear_all_words(self, user_id: int, message_id: int):
-        self.delete_button(user_id, message_id)
-        self.session_repo.set_session(user_id, Session(SessionType.confirm_clear_all))
-        buttons = [[["Да, удалить все", "Подтвердить удаление"]],
-                   [["Отмена", "Меню"]]]
-        self.send_message(user_id, "Вы уверены? Это удалит все слова из вашего списка.", buttons)
 
     def confirm_clear_all_words(self, user_id: int, message_id: int = 0):
         self.user_word_repo.clear_user_words(user_id)

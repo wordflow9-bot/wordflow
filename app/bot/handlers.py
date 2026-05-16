@@ -40,6 +40,11 @@ def menu(message):
     interaction.main_menu(message.from_user.id)
 
 
+@bot.message_handler(commands=['clear'])
+def clear_all_words(message):
+    interaction.clear_all_words(message.from_user.id)
+
+
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
     interaction.process_message(message.from_user.id, message.text)
@@ -62,6 +67,3 @@ def handle_photo(message):
         print(f"Ошибка при приеме фото : {e}")
 
 
-@bot.message_handler(commands=['clear'])
-def clear_all_words(message):
-    interaction.clear_all_words(message.from_user.id)
