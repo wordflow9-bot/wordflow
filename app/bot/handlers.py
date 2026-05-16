@@ -16,8 +16,13 @@ interaction = Interaction(TOKEN)
 
 
 @bot.message_handler(commands=['list'])
-def _help(message):
+def _list(message):
     interaction.list_words(message.from_user.id)
+
+
+@bot.message_handler(commands=['help'])
+def _help(message):
+    interaction.command_help(message.from_user.id)
 
 
 @bot.message_handler(commands=['start'])
@@ -25,8 +30,18 @@ def start(message):
     interaction.main_menu(message.from_user.id)
 
 
+@bot.message_handler(commands=['train'])
+def train(message):
+    interaction.command_tr_choose_mode(message.from_user.id)
+
+
+@bot.message_handler(commands=['add'])
+def train(message):
+    interaction.command_add_word(message.from_user.id)
+
+
 @bot.message_handler(commands=['menu'])
-def start(message):
+def menu(message):
     interaction.main_menu(message.from_user.id)
 
 
@@ -50,6 +65,7 @@ def handle_photo(message):
         interaction.process_photo(user_id, downloaded_file)
     except Exception as e:
         print(f"Ошибка при приеме фото : {e}")
+
 
 @bot.message_handler(commands=['clear'])
 def clear_all_words(message):
